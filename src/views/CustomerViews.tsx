@@ -30,91 +30,126 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
   const [offers, setOffers] = useState<Offer[]>([]);
 
   useEffect(() => {
-    setServices(MockDB.getServices().filter(s => s.status === 'Active').slice(0, 4));
+    setServices(MockDB.getServices().filter(s => s.status === 'Active'));
     setPackages(MockDB.getPackages().filter(p => p.status === 'Active').slice(0, 3));
     setReviews(MockDB.getReviews().filter(r => r.status === 'Approved').slice(0, 3));
     setOffers(MockDB.getOffers().filter(o => o.status === 'Active'));
   }, []);
 
+  // Standard requested Indian Parlour categories with high-quality representation images
+  const parlourCategories = [
+    { name: 'Makeup', emoji: '💄', img: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80', desc: 'HD & Airbrush Party, Bridal and Festive Glow', price: '1,999' },
+    { name: 'Hair', emoji: '💇‍♀️', img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80', desc: 'Hair Spa, Keratin, Smoothening & Custom Styling', price: '799' },
+    { name: 'Skin & Facial', emoji: '🌸', img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&auto=format&fit=crop&q=80', desc: 'Gold, Pearl & Herbal Therapies for Radiant Skin', price: '699' },
+    { name: 'Grooming', emoji: '✨', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80', desc: 'Precise Threading, Charcoal Waxing & De-Tan', price: '50' },
+    { name: 'Nails', emoji: '💅', img: 'https://images.unsplash.com/photo-1604654894610-df4906b197ae?w=600&auto=format&fit=crop&q=80', desc: 'Luxury Gel Extensions, Chrome Paint & Custom Art', price: '499' },
+    { name: 'Bridal Services', emoji: '👰', img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format&fit=crop&q=80', desc: 'Royal Bridal Transformations & Saree Draping', price: '7,999' }
+  ];
+
+  // Instagram-worthy visual feed posts
+  const instagramFeed = [
+    { id: 1, img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&auto=format&fit=crop&q=80', likes: '243', type: 'Bridal Makeup' },
+    { id: 2, img: 'https://images.unsplash.com/photo-1615396899839-c99c121888b0?w=500&auto=format&fit=crop&q=80', likes: '189', type: 'Bridal Saree' },
+    { id: 3, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&auto=format&fit=crop&q=80', likes: '312', type: 'Hair Styling' },
+    { id: 4, img: 'https://images.unsplash.com/photo-1604654894610-df4906b197ae?w=500&auto=format&fit=crop&q=80', likes: '154', type: 'Premium Nail Art' },
+    { id: 5, img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=500&auto=format&fit=crop&q=80', likes: '202', type: 'Facial & Glow' },
+    { id: 6, img: 'https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=500&auto=format&fit=crop&q=80', likes: '425', type: 'Salon Ambience' },
+    { id: 7, img: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?w=500&auto=format&fit=crop&q=80', likes: '378', type: 'Traditional Makeover' },
+    { id: 8, img: 'https://images.unsplash.com/photo-1610189012903-b44403845758?w=500&auto=format&fit=crop&q=80', likes: '291', type: 'Party Glamour' }
+  ];
+
   return (
-    <div className="space-y-24 pb-16">
+    <div className="space-y-24 pb-20 bg-[#FFFDFB]">
+      
       {/* 1A. HERO SECTION */}
-      <section id="hero-banner" className="relative bg-[#FFF9F7] pt-32 pb-20 overflow-hidden border-b border-[#F5DDE1]/40">
-        {/* Subtle decorative floral/gold circles */}
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-[#F5DDE1] rounded-full blur-3xl opacity-30 -z-10" />
-        <div className="absolute bottom-10 left-10 w-64 h-64 bg-[#D4A373] rounded-full blur-3xl opacity-10 -z-10" />
+      <section id="hero-banner" className="relative bg-gradient-to-b from-[#FFF0F2] to-[#FFFDFB] pt-32 pb-24 overflow-hidden border-b border-[#F5DDE1]/40">
+        {/* Artistic background designs */}
+        <div className="absolute top-1/4 -right-16 w-96 h-96 bg-[#FAD2E1]/40 rounded-full blur-3xl opacity-60 -z-10" />
+        <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#E5C494]/10 rounded-full blur-3xl opacity-40 -z-10" />
+        
+        {/* Subtle curved pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#B85C72_1px,transparent_1px)] [background-size:16px_16px]" />
 
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Hero Left Content */}
-          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F5DDE1] rounded-full text-[11px] font-sans font-bold tracking-[0.2em] uppercase text-[#B85C72]">
-              <Sparkles className="w-3.5 h-3.5" />
-              LADIES BEAUTY PARLOUR & SALON
+          <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF0F2] border border-[#F5DDE1] rounded-full text-[11px] font-sans font-extrabold tracking-[0.2em] uppercase text-[#B85C72] shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse text-[#D4AF37]" />
+              LADIES BEAUTY PARLOUR
             </div>
             
-            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#24191B] leading-[1.1] tracking-tight">
-              Your Beauty, <br className="hidden sm:inline" />
-              <span className="text-[#B85C72] italic font-normal">Our Passion.</span>
-            </h1>
-
-            <p className="text-sm font-sans tracking-[0.2em] text-[#D4A373] uppercase font-semibold">
-              Makeup &bull; Hair &bull; Skin &bull; Grooming
-            </p>
-
-            <p className="text-[#24191B]/75 text-base md:text-lg max-w-lg mx-auto lg:mx-0 font-sans leading-relaxed">
-              Step into a world of elegance, care, and confidence. At Glow & Grace Ladies Beauty Parlour & Salon, we bring out the most premium and radiant version of you, using high-quality professional cosmetics and skin therapies in a pristine, comfortable women-only environment.
-            </p>
+            <div className="space-y-4">
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#3B0F19] leading-[1.15] tracking-tight">
+                Look Beautiful. <br />
+                <span className="text-[#B85C72] italic font-serif font-normal">Feel Confident.</span>
+              </h1>
+              <p className="text-[#3B0F19]/80 text-base md:text-lg max-w-xl mx-auto lg:mx-0 font-sans leading-relaxed">
+                “Professional Makeup, Hair, Skin & Beauty Services for Every Special Moment.”
+              </p>
+            </div>
 
             {/* Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
-              <Button variant="primary" size="lg" onClick={() => navigate('booking')}>
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+              <Button 
+                variant="primary" 
+                size="lg" 
+                onClick={() => navigate('booking')}
+                className="bg-[#B85C72] hover:bg-[#802339] border-none shadow-md hover:shadow-lg text-white font-semibold transition-all duration-300"
+              >
                 Book Appointment
               </Button>
-              <Button variant="outline" size="lg" onClick={() => navigate('services')}>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={() => navigate('services')}
+                className="border-[#B85C72] text-[#B85C72] hover:bg-[#FFF0F2] font-semibold transition-all duration-300"
+              >
                 Explore Services
               </Button>
+            </div>
+
+            {/* Trust badge */}
+            <div className="pt-4 flex items-center justify-center lg:justify-start gap-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#FFF0F2] text-[#B85C72] border border-[#FAD2E1] font-bold font-serif shadow-xs">
+                ✨
+              </div>
+              <div>
+                <span className="text-sm font-extrabold text-[#3B0F19] block tracking-wide">500+ Happy Clients</span>
+                <span className="text-[11px] text-[#3B0F19]/60 block font-sans">Bridal Transformations & Social Glam</span>
+              </div>
             </div>
           </div>
 
           {/* Hero Right Media */}
           <div className="lg:col-span-6 relative">
             <div className="relative mx-auto max-w-md lg:max-w-none">
-              {/* Main Bridal Graphic */}
+              {/* Gold luxury thin frame border */}
+              <div className="absolute -inset-4 border border-[#D4AF37]/40 rounded-[44px] pointer-events-none translate-x-3 translate-y-3 hidden sm:block" />
+
+              {/* Main Bridal/Beauty Portrait */}
               <div className="aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl border-4 border-white relative z-10 bg-rose-50">
                 <img 
                   src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80" 
-                  alt="Elegant bridal makeup work by Glow and Grace"
-                  className="w-full h-full object-cover"
+                  alt="Beautiful traditional Indian bridal makeup artwork by Glow & Grace parlour"
+                  className="w-full h-full object-cover object-center scale-102"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#3B0F19]/30 to-transparent pointer-events-none" />
               </div>
 
-              {/* FLOATING BADGES */}
-              {/* Badge 1 */}
-              <div className="absolute -top-4 -left-6 z-20 bg-white shadow-xl px-4 py-3 rounded-2xl flex items-center gap-3 border border-[#F5DDE1] animate-bounce-subtle">
-                <div className="w-9 h-9 bg-[#FFF9F7] text-[#B85C72] border border-[#F5DDE1] rounded-full flex items-center justify-center font-bold font-serif">500+</div>
+              {/* FLOATING BADGES FOR WARM PARLOUR VIBE */}
+              <div className="absolute -top-4 -left-6 z-20 bg-white/95 backdrop-blur-md shadow-xl px-4 py-2.5 rounded-2xl flex items-center gap-2.5 border border-[#F5DDE1]">
+                <span className="text-xl">👩‍🎨</span>
                 <div>
-                  <span className="text-xs font-bold text-[#24191B] block">Happy Clients</span>
-                  <span className="text-[9px] text-[#24191B]/50 block font-sans">Bridal & Socials</span>
+                  <span className="text-xs font-bold text-[#3B0F19] block">Certified Artists</span>
+                  <span className="text-[9px] text-[#3B0F19]/50 block font-sans">L\'Oreal & MAC Experts</span>
                 </div>
               </div>
 
-              {/* Badge 2 */}
-              <div className="absolute top-1/2 -right-10 z-20 bg-[#24191B] text-white shadow-xl px-4 py-3 rounded-2xl flex items-center gap-3 border border-white/10">
-                <div className="w-9 h-9 bg-white/10 text-[#D4A373] rounded-full flex items-center justify-center font-serif font-bold">5+</div>
+              <div className="absolute bottom-12 -right-8 z-20 bg-[#3B0F19] text-[#FFFDF9] shadow-xl px-4 py-2.5 rounded-2xl flex items-center gap-2.5 border border-[#D4AF37]/30">
+                <span className="text-lg">👑</span>
                 <div>
-                  <span className="text-xs font-bold text-white block">Years Exp</span>
-                  <span className="text-[9px] text-white/50 block font-sans">Certified Experts</span>
-                </div>
-              </div>
-
-              {/* Badge 3 */}
-              <div className="absolute -bottom-6 left-10 z-20 bg-white shadow-xl px-5 py-3.5 rounded-2xl flex items-center gap-3 border border-[#F5DDE1]">
-                <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-[#24191B] block">100% Care & Hygiene</span>
-                  <span className="text-[9px] text-[#24191B]/50 block font-sans">Sterilized Equipment</span>
+                  <span className="text-xs font-bold block">100% Women Safe</span>
+                  <span className="text-[9px] text-white/60 block font-sans">Pristine & Private Parlour</span>
                 </div>
               </div>
             </div>
@@ -125,202 +160,469 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
       {/* 1B. LIMITED TIME OFFERS */}
       {offers.length > 0 && (
         <section id="promo-banner" className="max-w-7xl mx-auto px-6">
-          <div className="bg-gradient-to-r from-[#24191B] to-[#3a282b] rounded-3xl p-8 md:p-10 text-white relative overflow-hidden border-b-4 border-[#D4A373] shadow-lg">
+          <div className="bg-gradient-to-r from-[#3B0F19] via-[#4A121A] to-[#3B0F19] rounded-3xl p-8 md:p-10 text-[#FFFDF9] relative overflow-hidden border-b-4 border-[#D4AF37] shadow-xl">
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="space-y-2 text-center md:text-left">
-                <span className="text-xs uppercase tracking-widest text-[#D4A373] font-bold block">
-                  LIMITED TIME OFFER
+                <span className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-extrabold block">
+                  ✨ LIMITED TIME FESTIVE EXCLUSIVE ✨
                 </span>
-                <h3 className="font-serif text-2xl md:text-3xl font-bold text-[#FFF9F7]">
+                <h3 className="font-serif text-2xl md:text-3xl font-bold text-[#FFFDF9]">
                   {offers[0].title}
                 </h3>
-                <p className="text-sm text-[#FFF9F7]/70 max-w-xl">
+                <p className="text-sm text-white/80 max-w-xl font-sans">
                   {offers[0].description}
                 </p>
               </div>
               <Button
                 variant="accent"
                 onClick={() => navigate('booking')}
-                className="shrink-0 flex items-center gap-2"
+                className="shrink-0 flex items-center gap-2 bg-[#D4AF37] hover:bg-[#E5C494] text-[#3B0F19] border-none font-bold"
               >
-                Claim Offer
+                Claim Offer / Book Now
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
             {/* Background design elements */}
-            <div className="absolute right-0 top-0 w-64 h-64 bg-white/5 rounded-full -translate-y-12 translate-x-12 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-64 h-64 bg-white/[0.03] rounded-full -translate-y-12 translate-x-12 pointer-events-none" />
+            <div className="absolute left-1/3 bottom-0 w-48 h-48 bg-[#B85C72]/10 rounded-full blur-2xl pointer-events-none" />
           </div>
         </section>
       )}
 
-      {/* 1C. SERVICES HIGHLIGHT SECTION */}
-      <section id="featured-services" className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-4">
-          <div>
-            <span className="text-xs uppercase tracking-widest text-[#B85C72] font-semibold block mb-2 font-sans">
-              Discover Our Menu
-            </span>
-            <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#24191B]">
-              Beauty, Your Way.
-            </h2>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('services')} className="group flex items-center gap-2 shrink-0">
-            View All Services
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+      {/* 1C. SERVICES DESIGN (IMAGE-DRIVEN CATEGORIES) */}
+      <section id="featured-services" className="max-w-7xl mx-auto px-6 space-y-12">
+        <div className="text-center max-w-xl mx-auto space-y-3">
+          <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans block">
+            Our Beauty Menu
+          </span>
+          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#3B0F19]">
+            Exquisite Services for You
+          </h2>
+          <div className="w-16 h-0.5 bg-[#B85C72] mx-auto opacity-40 rounded-full" />
+          <p className="text-sm text-[#3B0F19]/70 font-sans">
+            Hand-picked beauty treatments customized specifically for Indian skin types, hair textures, and traditional events.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map(s => (
-            <ServiceCard 
-              key={s.id} 
-              service={s} 
-              onViewDetails={(slug) => navigate(`services/${slug}`)} 
-              onBook={() => navigate('booking')}
-            />
+        {/* 6 Elegant Parlour Categories - Mobile horizontal swipeable, Desktop 3-column grid */}
+        <div className="flex overflow-x-auto pb-4 md:pb-0 gap-6 scrollbar-none snap-x snap-mandatory md:grid md:grid-cols-3">
+          {parlourCategories.map((cat, idx) => (
+            <div 
+              key={idx}
+              className="bg-white border border-[#F5DDE1] rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 flex flex-col h-full shrink-0 w-72 md:w-auto snap-center group"
+            >
+              <div className="h-48 overflow-hidden relative">
+                <img 
+                  src={cat.img} 
+                  alt={cat.name} 
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-[#3B0F19]/20" />
+                <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-[#3B0F19] text-xs font-sans font-extrabold tracking-wider uppercase px-3 py-1 rounded-full border border-[#F5DDE1]">
+                  {cat.emoji} {cat.name}
+                </span>
+                <span className="absolute bottom-4 right-4 bg-[#3B0F19]/90 text-white text-[11px] font-sans font-bold px-3 py-1 rounded-full border border-white/10">
+                  Starts from ₹{cat.price}
+                </span>
+              </div>
+              <div className="p-6 space-y-4 flex flex-col flex-grow">
+                <h3 className="font-serif text-lg font-bold text-[#3B0F19]">{cat.name}</h3>
+                <p className="text-xs text-[#3B0F19]/70 font-sans leading-relaxed flex-grow">{cat.desc}</p>
+                <div className="pt-2 flex gap-2">
+                  <button 
+                    onClick={() => navigate('services')}
+                    className="flex-1 py-2 text-center text-xs font-extrabold text-[#B85C72] hover:text-[#802339] border border-[#F5DDE1] hover:border-[#B85C72] bg-[#FFF0F2]/20 hover:bg-[#FFF0F2]/60 rounded-xl transition-all duration-300 cursor-pointer"
+                  >
+                    View Menu
+                  </button>
+                  <button 
+                    onClick={() => navigate('booking')}
+                    className="flex-1 py-2 text-center text-xs font-extrabold text-white bg-[#B85C72] hover:bg-[#802339] rounded-xl transition-all duration-300 cursor-pointer shadow-xs"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* 1D. CINEMATIC BRIDAL FEATURE */}
-      <section id="bridal-special" className="bg-[#24191B] text-[#FFF9F7] py-20 relative overflow-hidden">
+      {/* 1D. BRIDAL SECTION */}
+      <section id="bridal-special" className="relative bg-[#3B0F19] text-[#FFFDF9] py-24 overflow-hidden border-y border-[#D4AF37]/30">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#B85C72]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#E5C494]/5 rounded-full blur-3xl pointer-events-none" />
+
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Graphic Side */}
-          <div className="lg:col-span-6 relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/5 bg-stone-900">
-            <img 
-              src="https://images.unsplash.com/photo-1615396899839-c99c121888b0?w=800&auto=format&fit=crop&q=80" 
-              alt="Bridal makeup styling session Close-up"
-              className="w-full h-full object-cover"
-            />
+          {/* Large beautiful Indian bride Portrait */}
+          <div className="lg:col-span-6 relative">
+            <div className="absolute -inset-3 border-2 border-[#D4AF37]/30 rounded-3xl translate-x-2 translate-y-2 pointer-events-none" />
+            <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-stone-950 relative z-10">
+              <img 
+                src="https://images.unsplash.com/photo-1615396899839-c99c121888b0?w=800&auto=format&fit=crop&q=80" 
+                alt="Gorgeous traditional Indian Bridal Makeup close-up portrait"
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
           </div>
 
-          {/* Content Side */}
+          {/* Content side */}
           <div className="lg:col-span-6 space-y-8">
             <div className="space-y-4">
-              <span className="text-xs uppercase tracking-[0.2em] text-[#D4A373] font-bold font-sans block">
-                THE SIGNATURE BRIDAL
+              <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-extrabold font-sans block">
+                👑 ROYAL BRIDAL BOUTIQUE
               </span>
-              <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-                Your Big Day. <br />
-                Your Signature Look.
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.15] tracking-tight">
+                Your Special Day <br />Deserves a Special Glow.
               </h2>
-              <p className="text-[#FFF9F7]/70 text-sm md:text-base leading-relaxed">
-                Your wedding day is a collection of precious moments. We focus on curating a bespoke bridal transformation that honors your traditions, matches your dress, and ensures you feel comfortable and camera-ready.
+              <div className="w-16 h-0.5 bg-[#D4AF37] opacity-40 rounded-full" />
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed font-sans">
+                Every wedding is a timeless journey. We curate signature traditional transformations that blend beautifully with your ceremonial attire, lehenga, or saree. Feel absolutely radiant, authentic, and comfortable throughout your royal celebrations.
               </p>
             </div>
 
-            {/* Checkmark Benefits list */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                '✓ Personalized consultation',
-                '✓ Professional makeup artist',
-                '✓ Premium products only',
-                '✓ Elaborate hairstyling',
-                '✓ Perfect saree/outfit draping',
-                '✓ 18-hour stay-lock finish',
-                '✓ Pre-event consultation'
-              ].map((b, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-[#FFF9F7]/85">
-                  <span className="text-[#D4A373] font-extrabold">{b.slice(0, 1)}</span>
-                  <span>{b.slice(2)}</span>
-                </div>
-              ))}
+            {/* Bridal services bullet points with visual icons */}
+            <div className="bg-[#4A121A] p-6 rounded-2xl border border-[#D4AF37]/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
+                <span className="text-[#D4AF37] text-lg">💄</span>
+                <span className="font-semibold">Bridal HD/Airbrush Makeup</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
+                <span className="text-[#D4AF37] text-lg">💇‍♀️</span>
+                <span className="font-semibold">Bridal Floral Hairstyling</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
+                <span className="text-[#D4AF37] text-lg">👗</span>
+                <span className="font-semibold">Perfect Saree Draping</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
+                <span className="text-[#D4AF37] text-lg">💅</span>
+                <span className="font-semibold">Glitz Bridal Nail Styling</span>
+              </div>
             </div>
 
             <Button
               variant="accent"
               size="lg"
               onClick={() => navigate('packages')}
-              className="flex items-center gap-2"
+              className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#E5C494] text-[#3B0F19] border-none font-bold flex items-center justify-center gap-2"
             >
-              Explore Bridal Packages
+              Explore Bridal Services
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
       </section>
 
-      {/* 1E. WHY CHOOSE US */}
-      <section id="why-choose-glow" className="max-w-7xl mx-auto px-6">
-        <div className="text-center max-w-xl mx-auto mb-16">
-          <span className="text-xs uppercase tracking-widest text-[#B85C72] font-semibold font-sans block mb-2">
-            Our Core Values
-          </span>
-          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#24191B] mb-4">
-            Why Choose Us
-          </h2>
-          <p className="text-[#24191B]/60 text-sm leading-relaxed">
-            We operate under strict hygiene protocols and premium aesthetics to offer the ultimate salon relaxation.
-          </p>
-        </div>
+      {/* 1E. REAL PARLOUR PRICE MENU SECTION */}
+      <section id="salon-menu-list" className="max-w-4xl mx-auto px-6">
+        <div className="bg-[#FAF6F0] border border-[#E5C494]/40 p-8 md:p-12 rounded-[32px] shadow-sm relative overflow-hidden">
+          {/* Elegant gold corner accents */}
+          <div className="absolute top-0 left-0 w-8 h-8 border-t border-l border-[#D4AF37] m-4" />
+          <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-[#D4AF37] m-4" />
+          <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-[#D4AF37] m-4" />
+          <div className="absolute bottom-0 right-0 w-8 h-8 border-b border-r border-[#D4AF37] m-4" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: <Award className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Professional Experts',
-              desc: 'Our artists are certified professionals specializing in modern beauty arts.'
-            },
-            {
-              icon: <ShieldCheck className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Premium Products',
-              desc: 'We select international, dermatologically safe luxury cosmetic brands.'
-            },
-            {
-              icon: <Heart className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Personalized Experience',
-              desc: 'We map facial angles and skin tones to formulate custom contour palettes.'
-            },
-            {
-              icon: <Smile className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Hygiene First',
-              desc: 'Deep sterilization of brushes, tools and counters between slot timings.'
-            },
-            {
-              icon: <Coins className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Transparent Pricing',
-              desc: 'Simple luxury packages without hidden taxes or surprises.'
-            },
-            {
-              icon: <Coffee className="w-8 h-8 text-[#B85C72]" />,
-              title: 'Relaxing Atmosphere',
-              desc: 'Chic cream interiors and quiet ambient tunes for peaceful pampering.'
-            }
-          ].map((feat, i) => (
-            <div key={i} className="bg-white border border-[#F5DDE1] p-8 rounded-3xl space-y-4 hover:shadow-md transition-shadow">
-              <div className="w-14 h-14 bg-[#FFF9F7] rounded-full border border-[#F5DDE1] flex items-center justify-center">
-                {feat.icon}
+          {/* Header */}
+          <div className="text-center space-y-2 mb-10">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#B85C72] font-extrabold block">
+              TRADITIONAL SALON CARD
+            </span>
+            <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[#3B0F19]">
+              Signature Parlour Rate List
+            </h2>
+            <div className="w-12 h-px bg-[#D4AF37]/50 mx-auto" />
+            <p className="text-[11px] uppercase tracking-widest text-[#3B0F19]/50 font-sans font-semibold">
+              Pure Ladies Care &bull; Only Top Brands Used
+            </p>
+          </div>
+
+          {/* Dotted Menu list */}
+          <div className="space-y-6 md:space-y-8">
+            
+            {/* ITEM 1 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  PARTY MAKEUP
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-[#24191B]">{feat.title}</h3>
-              <p className="text-xs text-[#24191B]/60 font-sans leading-relaxed">{feat.desc}</p>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹1,999</span>
+              </div>
             </div>
-          ))}
+
+            {/* ITEM 2 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  BRIDAL MAKEUP (HD)
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹7,999</span>
+              </div>
+            </div>
+
+            {/* ITEM 3 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  GOLDEN SECRETS FACIAL
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹1,500</span>
+              </div>
+            </div>
+
+            {/* ITEM 4 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  HERBAL BRIGHTENING CLEANUP
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹699</span>
+              </div>
+            </div>
+
+            {/* ITEM 5 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  L\'OREAL DEEP HYDRATION HAIR SPA
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹799</span>
+              </div>
+            </div>
+
+            {/* ITEM 6 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  GEL EXTENSIONS & NAIL ART
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹999</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Disclaimer / Promo */}
+          <div className="mt-10 pt-6 border-t border-[#D4AF37]/20 text-center space-y-3">
+            <p className="text-[11px] text-[#3B0F19]/65 italic font-sans">
+              * Note: Custom adjustments and package combos are fully editable inside our secure Admin system.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button 
+                onClick={() => navigate('services')}
+                className="text-xs font-bold text-[#B85C72] hover:underline cursor-pointer"
+              >
+                View Full Interactive Menu &rarr;
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 1F. REVIEWS HIGHLIGHTS */}
-      <section id="home-testimonials" className="max-w-7xl mx-auto px-6">
-        <div className="text-center max-w-xl mx-auto mb-16">
-          <span className="text-xs uppercase tracking-widest text-[#B85C72] font-semibold font-sans block mb-2">
-            Client Stories
-          </span>
-          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#24191B] mb-4">
-            Loved By Hundreds.
+      {/* 1F. INSTAGRAM INTEGRATION */}
+      <section id="instagram-feed" className="max-w-7xl mx-auto px-6 space-y-12">
+        <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFF0F2] rounded-full text-[10px] font-sans font-extrabold tracking-widest text-[#B85C72]">
+            <Instagram className="w-3.5 h-3.5" />
+            INSTAGRAM VIBE
+          </div>
+          <h2 className="font-serif text-3xl font-extrabold text-[#3B0F19]">
+            Follow Our Beauty Journey ✨
           </h2>
+          <a 
+            href={settings.instagramUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-[#B85C72] hover:text-[#802339] font-sans font-bold tracking-wide text-sm block"
+          >
+            @glowandgrace
+          </a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {reviews.map(r => (
-            <ReviewCard key={r.id} review={r} />
+        {/* 8 Post Grid with rich hover effect */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {instagramFeed.map((post) => (
+            <div 
+              key={post.id} 
+              className="aspect-square relative rounded-2xl overflow-hidden group border border-[#F5DDE1]/60 shadow-xs cursor-pointer bg-stone-100"
+            >
+              <img 
+                src={post.img} 
+                alt={post.type} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                referrerPolicy="no-referrer"
+              />
+              {/* Instagram Hover state */}
+              <div className="absolute inset-0 bg-[#3B0F19]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-white space-y-1.5">
+                <span className="text-xl">❤️</span>
+                <span className="text-xs font-bold tracking-wider font-sans">{post.likes} Likes</span>
+                <span className="text-[10px] uppercase font-bold tracking-[0.15em] text-[#D4AF37] block">
+                  {post.type}
+                </span>
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="text-center mt-12">
-          <Button variant="outline" size="sm" onClick={() => navigate('reviews')}>
+        <div className="text-center pt-2">
+          <a 
+            href={settings.instagramUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#3B0F19] hover:bg-[#802339] text-[#FFFDF9] rounded-full text-xs font-bold tracking-wider transition-colors shadow-md"
+          >
+            <Instagram className="w-4 h-4" />
+            Follow on Instagram
+          </a>
+        </div>
+      </section>
+
+      {/* 1G. TESTIMONIALS (WARM & LOCAL BEAUTY PORTFOLIO STORIES) */}
+      <section id="home-testimonials" className="max-w-7xl mx-auto px-6 space-y-12">
+        <div className="text-center max-w-xl mx-auto space-y-3">
+          <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans block">
+            Sweet Words
+          </span>
+          <h2 className="font-serif text-3xl font-extrabold text-[#3B0F19]">
+            Loved By Modern Ladies
+          </h2>
+          <div className="w-12 h-0.5 bg-[#B85C72] mx-auto opacity-40 rounded-full" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            {
+              text: "“Loved my bridal look! The entire team was so friendly, professional, and took incredible care of my traditional saree pleating and hair accessories.”",
+              author: "Priyanka Sharma",
+              event: "Bridal Makeup Client",
+              rating: 5
+            },
+            {
+              text: "“Hands down the best facial skin polish I’ve ever had! The women-only space is extremely comforting, peaceful and hygienic. Highly recommend!”",
+              author: "Ritu Banerjee",
+              event: "Glow facial regular",
+              rating: 5
+            },
+            {
+              text: "“Got beautiful nail extensions and festive party makeup done for my cousin’s wedding. Everyone at the event complimented the clean work!”",
+              author: "Ananya Deshmukh",
+              event: "Party Makeup Client",
+              rating: 5
+            }
+          ].map((item, i) => (
+            <div 
+              key={i} 
+              className="bg-[#FFF0F2]/40 border border-[#F5DDE1] p-8 rounded-3xl space-y-5 shadow-xs relative flex flex-col justify-between"
+            >
+              {/* Elegant local quote symbol */}
+              <span className="font-serif text-5xl text-[#B85C72]/15 absolute top-4 left-6 pointer-events-none">&ldquo;</span>
+              <p className="text-[#3B0F19]/80 text-sm leading-relaxed font-sans italic relative z-10">
+                {item.text}
+              </p>
+              <div className="flex items-center justify-between border-t border-[#F5DDE1]/40 pt-4 mt-4">
+                <div>
+                  <h4 className="font-serif text-sm font-bold text-[#3B0F19]">{item.author}</h4>
+                  <span className="text-[10px] text-[#B85C72] uppercase font-sans font-bold block mt-0.5">{item.event}</span>
+                </div>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: item.rating }).map((_, rIdx) => (
+                    <Star key={rIdx} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('reviews')}
+            className="border-[#F5DDE1] text-[#3B0F19] hover:text-[#B85C72] hover:bg-[#FFF0F2]"
+          >
             Read More Reviews
           </Button>
         </div>
       </section>
+
+      {/* 1H. GLOW-UP CTA AT THE BOTTOM */}
+      <section id="ready-glow" className="max-w-5xl mx-auto px-6 pt-12">
+        <div className="bg-[#FFF0F2] border border-[#F5DDE1] rounded-[40px] p-8 md:p-14 text-center space-y-6 relative overflow-hidden shadow-sm">
+          {/* Subtle design leaf outline or golden glow bubble */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/40 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 space-y-4 max-w-lg mx-auto">
+            <span className="text-[11px] font-sans font-extrabold tracking-[0.25em] text-[#B85C72] uppercase block">
+              YOUR TIME TO RADIATE ✨
+            </span>
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#3B0F19] tracking-tight">
+              Ready for Your Glow-Up?
+            </h2>
+            <p className="text-sm text-[#3B0F19]/70 leading-relaxed font-sans font-medium">
+              “Book your beauty appointment today.”
+            </p>
+          </div>
+
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto pt-2">
+            <Button 
+              variant="primary" 
+              size="lg" 
+              onClick={() => navigate('booking')}
+              className="w-full sm:flex-1 bg-[#B85C72] hover:bg-[#802339] border-none text-white font-bold"
+            >
+              Book Appointment
+            </Button>
+            <a 
+              href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}?text=Hi%20Glow%20and%20Grace!%20I\'d%20like%20to%20book%20a%20beauty%20parlour%20appointment.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:flex-1 py-3 px-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+            >
+              <span>💬</span>
+              Chat on WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* MOBILE APP VIEW STICKY BOOK APPOINTMENT FOR BOTTOM DEVICE COMFORT */}
+      <div className="sm:hidden fixed bottom-4 left-4 right-4 z-50">
+        <Button 
+          variant="primary" 
+          size="lg" 
+          onClick={() => navigate('booking')}
+          className="w-full bg-[#B85C72] hover:bg-[#802339] border-none text-white font-bold text-xs py-3.5 shadow-lg flex items-center justify-center gap-2 animate-pulse-subtle"
+        >
+          <Calendar className="w-4 h-4" />
+          Book Appointment
+        </Button>
+      </div>
+
     </div>
   );
 };
@@ -425,19 +727,32 @@ export const ServicesView: React.FC<CustomerViewsProps> = ({ navigate }) => {
 
       {/* Tabs Filter */}
       <div className="flex flex-wrap justify-center gap-2 border-b border-[#F5DDE1] pb-6">
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 cursor-pointer ${
-              activeCategory === cat
-                ? 'bg-[#B85C72] text-white shadow-sm'
-                : 'text-[#24191B]/70 bg-[#FFF9F7] border border-[#F5DDE1] hover:text-[#B85C72]'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+        {categories.map(cat => {
+          const getEmoji = (name: string) => {
+            switch (name.toLowerCase()) {
+              case 'makeup': return '💄';
+              case 'hair': return '💇‍♀️';
+              case 'skin & facial': return '🌸';
+              case 'grooming': return '✨';
+              case 'bridal services': return '👰';
+              default: return '✨';
+            }
+          };
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wider transition-all duration-300 cursor-pointer flex items-center gap-1.5 ${
+                activeCategory === cat
+                  ? 'bg-[#B85C72] text-white shadow-md'
+                  : 'text-[#24191B]/70 bg-[#FFF9F7] border border-[#F5DDE1] hover:text-[#B85C72] hover:bg-[#FFF5F5]/40'
+              }`}
+            >
+              {cat !== 'All' && <span>{getEmoji(cat)}</span>}
+              <span>{cat}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Services Grid */}

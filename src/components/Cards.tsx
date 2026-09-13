@@ -53,14 +53,14 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onViewDetails
           <div className="flex gap-2">
             <button
               onClick={() => onViewDetails(service.slug)}
-              className="p-2 border border-[#F5DDE1] text-[#24191B]/70 hover:text-[#B85C72] hover:border-[#B85C72] rounded-full transition-colors cursor-pointer"
+              className="p-2 border border-[#F5DDE1] text-[#24191B]/70 hover:text-[#B85C72] hover:border-[#B85C72] bg-[#FFF5F5]/30 rounded-full transition-colors cursor-pointer"
               title="View Details"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={onBook}
-              className="px-4 py-2 bg-[#24191B] hover:bg-[#B85C72] text-white rounded-full text-xs font-semibold tracking-wide transition-colors cursor-pointer"
+              className="px-5 py-2 bg-[#B85C72] hover:bg-[#802339] text-white rounded-full text-xs font-bold tracking-wide transition-colors cursor-pointer shadow-xs"
             >
               Book
             </button>
@@ -83,8 +83,8 @@ export const PackageCard: React.FC<PackageCardProps> = ({ pkg, onBook }) => {
     <div
       className={`relative rounded-3xl p-8 transition-all duration-500 h-full flex flex-col justify-between ${
         pkg.isPopular
-          ? 'bg-[#24191B] text-white shadow-2xl scale-[1.02] border-t-4 border-[#D4A373]'
-          : 'bg-white text-[#24191B] border border-[#F5DDE1] hover:shadow-lg'
+          ? 'bg-[#3B0F19] text-white shadow-2xl scale-[1.02] border border-[#D4A373]/30 border-t-4 border-t-[#D4A373]'
+          : 'bg-white text-[#24191B] border border-[#F5DDE1] hover:shadow-lg rose-border-glow'
       }`}
     >
       {/* Popular Badge */}

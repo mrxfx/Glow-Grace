@@ -1,4 +1,4 @@
-const CACHE_NAME = 'glowgrace-v1';
+const CACHE_NAME = 'glowgrace-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -28,17 +28,54 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(e.request).catch(() => {
-        // Return offline fallback if page loading fails and request is for HTML page
-        if (e.request.headers.get('accept').includes('text/html')) {
-          return caches.match('/');
+  const url = new URL(e.request.url);
+  const acceptHeader = e.request.headers.get('accept') || '';
+  const isHtml = acceptHeader.includes('text/html') || url.pathname === '/';
+  const isJsCss = url.pathname.endsWith('.js') || url.pathname.endsWith('.css');
+
+  if (isHtml || isJsCss) {
+    // Network-First strategy for documents, scripts, and stylesheets
+    e.respondWith(
+      fetch(e.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(e.request, clone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(e.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            if (isHtml) {
+              return caches.match('/');
+            }
+          });
+        })
+    );
+  } else {
+    // Cache-First strategy for images, fonts, icons, manifest etc.
+    e.respondWith(
+      caches.match(e.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-      });
-    })
-  );
+        return fetch(e.request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(e.request, clone);
+            });
+          }
+          return response;
+        }).catch(() => {
+          // Silent fallback for non-essential assets
+        });
+      })
+    );
+  }
 });
