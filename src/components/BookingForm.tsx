@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, User, Phone, Mail, FileText, Clock, Sparkles, MessageCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Calendar, User, Phone, Mail, FileText, Clock, Sparkles, MessageCircle, ArrowRight, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MockDB } from '../data';
 import { Service, Artist, Appointment } from '../types';
 import { Button } from './Common';
@@ -27,6 +27,86 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const [time, setTime] = useState('');
   const [specialRequest, setSpecialRequest] = useState('');
   const [artistId, setArtistId] = useState('');
+
+  // Custom Visual Calendar state variables
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
+
+  const getDaysInMonth = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    
+    // Empty cells before the first day of the month
+    for (let i = 0; i < firstDayIndex; i++) {
+      days.push(null);
+    }
+    
+    // Day objects representing each day of the month
+    for (let d = 1; d <= totalDays; d++) {
+      days.push(new Date(year, month, d));
+    }
+    
+    return days;
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  const prevMonth = () => {
+    const today = new Date();
+    const currentMonthMin = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (currentMonth > currentMonthMin) {
+      setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    }
+  };
+
+  const selectDate = (selectedDay: Date) => {
+    const yyyy = selectedDay.getFullYear();
+    const mm = String(selectedDay.getMonth() + 1).padStart(2, '0');
+    const dd = String(selectedDay.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    setDate(dateStr);
+    setTime(''); // Reset selected time when date changes
+    if (errors.date) setErrors(p => ({ ...p, date: '' }));
+  };
+
+  const isSlotBooked = (timeSlot: string) => {
+    if (!date) return false;
+    const activeAppointments = MockDB.getAppointments().filter(
+      appt => appt.date === date && appt.status !== 'Cancelled'
+    );
+    
+    if (artistId && artistId !== 'any') {
+      return activeAppointments.some(appt => appt.time === timeSlot && appt.artistId === artistId);
+    } else {
+      const occupiedArtists = new Set(
+        activeAppointments
+          .filter(appt => appt.time === timeSlot && appt.artistId !== 'any')
+          .map(appt => appt.artistId)
+      );
+      return artists.length > 0 && occupiedArtists.size >= artists.length;
+    }
+  };
+
+  const getFormattedDateString = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const isPastDate = (d: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return d < today;
+  };
 
   // Mobile multi-step wizard state
   const [step, setStep] = useState(1);
@@ -266,50 +346,161 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             </div>
 
             {/* Select Date and Time Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="date-input" className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-2">
-                  Date *
-                </label>
-                <input
-                  id="date-input"
-                  type="date"
-                  min={new Date().toISOString().split('T')[0]}
-                  value={date}
-                  onChange={e => {
-                    setDate(e.target.value);
-                    if (errors.date) setErrors(p => ({ ...p, date: '' }));
-                  }}
-                  className={`w-full bg-[#FFF9F7] border ${
-                    errors.date ? 'border-red-400 focus:ring-red-300' : 'border-[#F5DDE1] focus:ring-[#B85C72]/30'
-                  } rounded-2xl py-3.5 px-4 text-sm text-[#24191B] outline-none focus:ring-4 transition-all`}
-                />
-                {errors.date && <p className="text-red-500 text-xs mt-1.5">{errors.date}</p>}
-              </div>
+            <div className="pt-4 border-t border-[#F5DDE1]/40">
+              <span className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-3">
+                Select Date & Time Slot *
+              </span>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white border border-[#F5DDE1] rounded-3xl p-5 md:p-6 shadow-sm">
+                
+                {/* CALENDAR MONTH VIEW */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-serif text-sm font-bold text-[#24191B]">
+                      {currentMonth.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
+                    </h4>
+                    <div className="flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={prevMonth}
+                        className="p-1.5 rounded-lg border border-[#F5DDE1] hover:bg-[#FFF9F7] hover:text-[#B85C72] transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-[#24191B]"
+                        disabled={
+                          currentMonth.getFullYear() === new Date().getFullYear() &&
+                          currentMonth.getMonth() === new Date().getMonth()
+                        }
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={nextMonth}
+                        className="p-1.5 rounded-lg border border-[#F5DDE1] hover:bg-[#FFF9F7] hover:text-[#B85C72] transition-colors text-[#24191B]"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-              <div>
-                <label htmlFor="time-input" className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-2">
-                  Preferred Time *
-                </label>
-                <select
-                  id="time-input"
-                  value={time}
-                  onChange={e => {
-                    setTime(e.target.value);
-                    if (errors.time) setErrors(p => ({ ...p, time: '' }));
-                  }}
-                  className={`w-full bg-[#FFF9F7] border ${
-                    errors.time ? 'border-red-400 focus:ring-red-300' : 'border-[#F5DDE1] focus:ring-[#B85C72]/30'
-                  } rounded-2xl py-3.5 px-4 text-sm text-[#24191B] outline-none focus:ring-4 focus:ring-[#B85C72]/30 transition-all appearance-none cursor-pointer`}
-                >
-                  <option value="">Select Time Slot</option>
-                  {['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'].map(t => (
-                    <option key={t} value={t}>
-                      {t} {parseInt(t) >= 12 ? 'PM' : 'AM'}
-                    </option>
-                  ))}
-                </select>
-                {errors.time && <p className="text-red-500 text-xs mt-1.5">{errors.time}</p>}
+                  {/* Days of Week Header */}
+                  <div className="grid grid-cols-7 text-center text-[10px] font-bold tracking-wider text-stone-400 uppercase">
+                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+                      <div key={day} className="py-1">{day}</div>
+                    ))}
+                  </div>
+
+                  {/* Monthly Day Matrix */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {getDaysInMonth().map((day, idx) => {
+                      if (!day) return <div key={`empty-${idx}`} className="aspect-square" />;
+                      
+                      const formatted = getFormattedDateString(day);
+                      const isSelected = date === formatted;
+                      const isPast = isPastDate(day);
+                      const isToday = getFormattedDateString(new Date()) === formatted;
+
+                      return (
+                        <button
+                          key={formatted}
+                          type="button"
+                          disabled={isPast}
+                          onClick={() => selectDate(day)}
+                          className={`aspect-square rounded-xl text-xs font-semibold flex flex-col items-center justify-center relative transition-all ${
+                            isSelected
+                              ? 'bg-[#B85C72] text-white shadow-md shadow-rose-950/10 scale-105 z-10'
+                              : isPast
+                              ? 'text-stone-300 cursor-not-allowed opacity-40'
+                              : 'text-stone-700 hover:bg-[#FFF9F7] hover:text-[#B85C72] border border-transparent hover:border-[#F5DDE1]/60'
+                          }`}
+                        >
+                          <span>{day.getDate()}</span>
+                          {isToday && !isSelected && (
+                            <span className="w-1 h-1 bg-[#D4A373] rounded-full absolute bottom-1.5" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {errors.date && <p className="text-red-500 text-xs">{errors.date}</p>}
+                </div>
+
+                {/* SLOTS GRID VIEW */}
+                <div className="lg:col-span-5 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-[#F5DDE1]/40 lg:pl-6 pt-5 lg:pt-0">
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <h4 className="font-serif text-sm font-bold text-[#24191B]">Available Hours</h4>
+                      <p className="text-[10px] text-stone-500">
+                        {date 
+                          ? `Slots for ${new Date(date).toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                          : 'Please select a date first'
+                        }
+                      </p>
+                    </div>
+
+                    {date ? (
+                      <div className="grid grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                        {['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'].map(t => {
+                          const booked = isSlotBooked(t);
+                          const isSelected = time === t;
+                          const hour = parseInt(t);
+                          const label = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
+
+                          if (booked) {
+                            return (
+                              <div
+                                key={t}
+                                className="border border-stone-200 bg-stone-50/50 text-stone-300 rounded-xl py-2.5 px-3 text-center text-xs font-semibold line-through cursor-not-allowed relative group select-none"
+                                title="This slot is fully reserved"
+                              >
+                                {label}
+                                <span className="absolute inset-0 flex items-center justify-center bg-stone-100/80 rounded-xl text-[9px] text-stone-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                  Full
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <button
+                              key={t}
+                              type="button"
+                              onClick={() => {
+                                setTime(t);
+                                if (errors.time) setErrors(p => ({ ...p, time: '' }));
+                              }}
+                              className={`border py-2.5 px-3 rounded-xl text-center text-xs font-semibold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-[#B85C72] bg-[#FFF9F7] text-[#B85C72] shadow-sm shadow-rose-950/5 font-bold scale-[1.02]'
+                                  : 'border-[#F5DDE1] bg-white text-stone-700 hover:border-[#B85C72] hover:bg-[#FFF9F7]/30'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="h-[200px] border border-dashed border-[#F5DDE1] rounded-2xl flex flex-col items-center justify-center text-center p-4">
+                        <Clock className="w-6 h-6 text-stone-300 mb-2 animate-pulse" />
+                        <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                          Awaiting Date Selection
+                        </span>
+                      </div>
+                    )}
+                    {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
+                  </div>
+
+                  {date && time && (
+                    <div className="mt-4 p-3 bg-[#FFF9F7] rounded-xl border border-[#F5DDE1]/60 flex items-center gap-2.5">
+                      <Clock className="w-4 h-4 text-[#B85C72]" />
+                      <div className="text-[11px]">
+                        <span className="text-stone-500 font-medium block">Selected Appointment:</span>
+                        <span className="font-bold text-[#24191B]">
+                          {new Date(date).toLocaleDateString('default', { month: 'short', day: 'numeric' })} at {parseInt(time) > 12 ? parseInt(time) - 12 : time}:00 {parseInt(time) >= 12 ? 'PM' : 'AM'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

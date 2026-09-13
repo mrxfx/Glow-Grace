@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Loader2, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, Loader2, AlertCircle, Sparkles, CheckCircle2, Upload, Link, FileImage, X } from 'lucide-react';
 
 // Elegant Primary, Secondary and Accent Button
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -154,15 +154,158 @@ export const ErrorState: React.FC<{ message?: string; onRetry?: () => void }> = 
 // Status Badge
 export const StatusBadge: React.FC<{ status: 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled' }> = ({ status }) => {
   const styles = {
-    Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    Confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    Completed: 'bg-purple-50 text-purple-700 border-purple-200',
-    Cancelled: 'bg-rose-50 text-rose-700 border-rose-200'
+    Pending: {
+      badge: 'bg-amber-50 text-amber-800 border-amber-200',
+      dot: 'bg-amber-500'
+    },
+    Confirmed: {
+      badge: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      dot: 'bg-emerald-500'
+    },
+    Completed: {
+      badge: 'bg-purple-50 text-purple-800 border-purple-200',
+      dot: 'bg-purple-500'
+    },
+    Cancelled: {
+      badge: 'bg-rose-50 text-rose-800 border-rose-200',
+      dot: 'bg-rose-500'
+    }
   };
 
+  const current = styles[status] || styles.Pending;
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[status]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${current.badge} shadow-sm select-none`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${current.dot} shrink-0`} />
       {status}
     </span>
   );
 };
+
+// Interactive Dual-mode (Local File or Remote URL) Image Uploader
+interface ImageUploaderProps {
+  value: string;
+  onChange: (value: string) => void;
+  label?: string;
+  placeholder?: string;
+}
+
+export const ImageUploader: React.FC<ImageUploaderProps> = ({
+  value,
+  onChange,
+  label = "Upload Image",
+  placeholder = "https://images.unsplash.com/..."
+}) => {
+  const [activeTab, setActiveTab] = React.useState<'local' | 'url'>(value.startsWith('data:image/') ? 'local' : 'url');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          onChange(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    onChange('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <label className="block text-xs font-bold text-[#24191B]/60">{label}</label>
+        <div className="flex bg-stone-100 rounded-lg p-0.5 border border-stone-200">
+          <button
+            type="button"
+            onClick={() => setActiveTab('local')}
+            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 ${activeTab === 'local' ? 'bg-white text-[#B85C72] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+          >
+            <Upload className="w-3 h-3" /> Local File
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('url')}
+            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 ${activeTab === 'url' ? 'bg-white text-[#B85C72] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+          >
+            <Link className="w-3 h-3" /> Image Link
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'local' ? (
+        <div className="space-y-3">
+          {value && value.startsWith('data:image/') ? (
+            <div className="relative border border-[#F5DDE1] rounded-2xl p-2 bg-[#FFF9F7]/30 flex items-center gap-3">
+              <img src={value} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+                  <FileImage className="w-3 h-3" /> Local image loaded
+                </span>
+                <p className="text-[9px] text-stone-400 mt-0.5 truncate">Base64 Data URI encoded directly</p>
+              </div>
+              <button
+                type="button"
+                onClick={clearImage}
+                className="p-1.5 bg-rose-50 text-[#B85C72] hover:bg-rose-100 rounded-xl cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-[#F5DDE1] hover:border-[#B85C72] rounded-2xl p-6 flex flex-col items-center justify-center text-center bg-[#FFF9F7]/10 hover:bg-[#FFF9F7]/40 transition-all cursor-pointer group"
+            >
+              <Upload className="w-6 h-6 text-[#B85C72] mb-2 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-bold text-[#24191B] block">Drag & Drop or Click</span>
+              <span className="text-[9px] text-stone-400 mt-1 block">Supports JPG, PNG or WEBP. Max 2MB recommended.</span>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <input
+            type="text"
+            value={value && !value.startsWith('data:image/') ? value : ''}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B] outline-none placeholder-stone-400"
+            placeholder={placeholder}
+          />
+          {value && !value.startsWith('data:image/') && (
+            <div className="border border-stone-200 rounded-2xl p-2 bg-stone-50/50 flex items-center gap-3">
+              <img src={value} alt="Preview" className="w-12 h-12 rounded-xl object-cover shrink-0 border border-stone-200" referrerPolicy="no-referrer" />
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-stone-500 font-bold block">Remote Image URL</span>
+                <p className="text-[9px] text-stone-400 truncate">{value}</p>
+              </div>
+              <button
+                type="button"
+                onClick={clearImage}
+                className="p-1.5 bg-stone-100 text-stone-500 hover:text-stone-700 hover:bg-stone-200 rounded-xl cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+

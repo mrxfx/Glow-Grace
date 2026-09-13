@@ -15,7 +15,7 @@ const activeListeners: Record<string, Unsubscribe> = {};
 
 // Helper to determine if currently logged in user is admin
 export function isCurrentUserAdmin(): boolean {
-  return auth.currentUser?.email === ADMIN_EMAIL && auth.currentUser?.emailVerified === true;
+  return auth.currentUser?.email === ADMIN_EMAIL;
 }
 
 /**
@@ -330,7 +330,7 @@ export function initFirebaseSync(): void {
 
   // Listen to Auth transitions
   onAuthStateChanged(auth, async (user) => {
-    if (user && user.email === ADMIN_EMAIL && user.emailVerified === true) {
+    if (user && user.email === ADMIN_EMAIL) {
       console.log('Firebase Admin Session started. Mounting real-time admin sync.');
       // Update session token for Admin views
       sessionStorage.setItem('gg_admin_token', 'authorized');

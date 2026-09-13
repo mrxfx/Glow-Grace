@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Star, Calendar, Clock, Heart, Award, ShieldCheck, 
   Smile, Coins, Coffee, ArrowRight, ArrowLeft, Instagram, 
-  MapPin, Phone, Mail, FileText, ChevronRight, CheckCircle2 
+  MapPin, Phone, Mail, FileText, ChevronRight, CheckCircle2,
+  Share2, Send, Copy, Check
 } from 'lucide-react';
 import { MockDB } from '../data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, WebsiteSettings, Appointment } from '../types';
@@ -469,11 +470,43 @@ export const ServicesView: React.FC<CustomerViewsProps> = ({ navigate }) => {
 // ==========================================
 export const ServiceDetailsView: React.FC<CustomerViewsProps> = ({ params, navigate }) => {
   const [service, setService] = useState<Service | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const matched = MockDB.getServices().find(s => s.slug === params.slug);
     setService(matched || null);
   }, [params.slug]);
+
+  const handleShare = async () => {
+    if (!service) return;
+    const shareUrl = window.location.href;
+    const shareTitle = `${service.name} - Glow & Grace Sanctuary`;
+    const shareText = `Discover the luxurious ${service.name} treatment at Glow & Grace! Duration: ${service.duration} mins, starting at only ₹${service.startingPrice}.`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error invoking native share API:', err);
+          setShowShareModal(true);
+        }
+      }
+    } else {
+      setShowShareModal(true);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!service) {
     return <LoadingState message="Fetching treatment secrets..." />;
@@ -549,16 +582,115 @@ export const ServiceDetailsView: React.FC<CustomerViewsProps> = ({ params, navig
             </p>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button variant="primary" size="lg" className="flex-1" onClick={() => navigate('booking')}>
               Book Appointment
             </Button>
             <Button variant="outline" size="lg" className="flex-1" onClick={() => navigate('contact')}>
               Inquire
             </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 flex items-center justify-center gap-2"
+              onClick={handleShare}
+            >
+              <Share2 className="w-4 h-4 text-[#B85C72]" />
+              Share Treatment
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* CUSTOM SHARE MODAL */}
+      {showShareModal && (
+        <Modal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          title="Share Luxury Treatment"
+        >
+          <div className="space-y-5">
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Spread the elegance! Share <strong>{service.name}</strong> with friends or family via your favorite platforms:
+            </p>
+
+            <div className="grid grid-cols-3 gap-3">
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  `Check out this luxurious ${service.name} treatment at Glow & Grace! Starts at ₹${service.startingPrice}. ${window.location.href}`
+                )}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex flex-col items-center justify-center p-3 border border-stone-200 hover:border-[#D4A373] bg-[#FFF9F7]/40 rounded-2xl hover:bg-[#FFF9F7]/80 transition-colors group text-center"
+              >
+                <span className="text-xl mb-1 block">💬</span>
+                <span className="text-[10px] font-bold text-stone-700 block">WhatsApp</span>
+              </a>
+
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  `Looking for a premium beauty treatment? I highly recommend ${service.name} at Glow & Grace!`
+                )}&url=${encodeURIComponent(window.location.href)}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex flex-col items-center justify-center p-3 border border-stone-200 hover:border-[#D4A373] bg-[#FFF9F7]/40 rounded-2xl hover:bg-[#FFF9F7]/80 transition-colors group text-center"
+              >
+                <span className="text-xl mb-1 block">🐦</span>
+                <span className="text-[10px] font-bold text-stone-700 block">Twitter / X</span>
+              </a>
+
+              <a
+                href={`mailto:?subject=${encodeURIComponent(
+                  `Glow & Grace Treatment Recommendation: ${service.name}`
+                )}&body=${encodeURIComponent(
+                  `Hi,\n\nI wanted to share this luxurious beauty treatment with you:\n\n${service.name}\n${service.description}\n\nCheck it out here: ${window.location.href}`
+                )}`}
+                className="flex flex-col items-center justify-center p-3 border border-stone-200 hover:border-[#D4A373] bg-[#FFF9F7]/40 rounded-2xl hover:bg-[#FFF9F7]/80 transition-colors group text-center"
+              >
+                <span className="text-xl mb-1 block">✉️</span>
+                <span className="text-[10px] font-bold text-stone-700 block">Email</span>
+              </a>
+            </div>
+
+            <div className="space-y-1.5 pt-2 border-t border-stone-100">
+              <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest">Copy Shared Link</span>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={window.location.href}
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl px-3 py-2 text-xs text-stone-600 outline-none select-all"
+                />
+                <button
+                  type="button"
+                  onClick={copyToClipboard}
+                  className="px-4 py-2 bg-[#B85C72] hover:bg-[#a04e61] text-white font-bold rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" /> Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" /> Copy
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setShowShareModal(false)}
+                className="px-4 py-2 bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold rounded-xl cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
@@ -998,13 +1130,23 @@ export const ReviewsView: React.FC<CustomerViewsProps> = () => {
 // ==========================================
 export const BookingView: React.FC<CustomerViewsProps> = ({ settings }) => {
   const [successBooking, setSuccessBooking] = useState<Appointment | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   const handleSuccess = (booking: Appointment) => {
     setSuccessBooking(booking);
+    setShowToast(true);
   };
 
   return (
-    <div className="py-24 max-w-4xl mx-auto px-6 space-y-12">
+    <div className="py-24 max-w-4xl mx-auto px-6 space-y-12 relative">
+      {showToast && successBooking && (
+        <Toast
+          message={`Splendid! Your booking reservation #${successBooking.bookingId} was successfully submitted.`}
+          type="success"
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
       {!successBooking ? (
         <>
           <div className="text-center max-w-xl mx-auto space-y-3">
