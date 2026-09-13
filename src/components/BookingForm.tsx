@@ -304,45 +304,111 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           <div className="space-y-5 animate-fade-in">
             {/* Select Service */}
             <div>
-              <label htmlFor="service-select" className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-2">
+              <label className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-3">
                 Select Service *
               </label>
-              <select
-                id="service-select"
-                value={serviceId}
-                onChange={e => {
-                  setServiceId(e.target.value);
-                  if (errors.serviceId) setErrors(p => ({ ...p, serviceId: '' }));
-                }}
-                className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-2xl py-3.5 px-4 text-sm text-[#24191B] outline-none focus:ring-4 focus:ring-[#B85C72]/30 transition-all appearance-none cursor-pointer"
-              >
-                {services.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} (starting ₹{s.startingPrice})
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1 border border-[#F5DDE1]/40 rounded-2xl bg-[#FFF9F7]/30">
+                {services.map(s => {
+                  const isSelected = serviceId === s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        setServiceId(s.id);
+                        if (errors.serviceId) setErrors(p => ({ ...p, serviceId: '' }));
+                      }}
+                      className={`flex items-center gap-4 p-3 rounded-xl border text-left transition-all duration-300 cursor-pointer focus:outline-none ${
+                        isSelected
+                          ? 'border-[#B85C72] bg-[#FFF9F7]/80 shadow-sm scale-[1.01]'
+                          : 'border-[#F5DDE1] bg-white hover:border-[#B85C72]/50 hover:bg-[#FFF9F7]/20'
+                      }`}
+                    >
+                      <img
+                        src={s.imageUrl}
+                        alt={s.name}
+                        referrerPolicy="no-referrer"
+                        className="w-14 h-14 object-cover rounded-lg shadow-xs shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9px] uppercase tracking-wider text-[#B85C72] font-semibold block mb-0.5">
+                          {s.category}
+                        </span>
+                        <h4 className="font-serif text-xs font-bold text-[#24191B] truncate">
+                          {s.name}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs font-bold text-[#24191B]">
+                            ₹{s.startingPrice}
+                          </span>
+                          <span className="text-[10px] text-stone-400">
+                            • {s.duration} mins
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
               {errors.serviceId && <p className="text-red-500 text-xs mt-1.5">{errors.serviceId}</p>}
             </div>
 
             {/* Select Preferred Artist */}
             <div>
-              <label htmlFor="artist-select" className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-2">
+              <label className="block text-xs font-semibold tracking-wider uppercase text-[#24191B]/80 mb-3">
                 Preferred Artist (Optional)
               </label>
-              <select
-                id="artist-select"
-                value={artistId}
-                onChange={e => setArtistId(e.target.value)}
-                className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-2xl py-3.5 px-4 text-sm text-[#24191B] outline-none focus:ring-4 focus:ring-[#B85C72]/30 transition-all appearance-none cursor-pointer"
-              >
-                <option value="">Any Available Professional</option>
-                {artists.map(a => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} ({a.role})
-                  </option>
-                ))}
-              </select>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Any Available Professional Option */}
+                <button
+                  type="button"
+                  onClick={() => setArtistId('')}
+                  className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-300 cursor-pointer focus:outline-none ${
+                    !artistId
+                      ? 'border-[#B85C72] bg-[#FFF9F7]/80 shadow-sm scale-[1.01]'
+                      : 'border-[#F5DDE1] bg-white hover:border-[#B85C72]/50 hover:bg-[#FFF9F7]/20'
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#F5DDE1]/40 text-[#B85C72] flex items-center justify-center mb-2 font-bold text-base shadow-xs shrink-0">
+                    ✨
+                  </div>
+                  <h4 className="font-serif text-xs font-bold text-[#24191B]">
+                    Any Artist
+                  </h4>
+                  <span className="text-[8px] text-stone-400 tracking-wide mt-0.5 uppercase block">
+                    Best Available
+                  </span>
+                </button>
+
+                {artists.map(a => {
+                  const isSelected = artistId === a.id;
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => setArtistId(a.id)}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-300 cursor-pointer focus:outline-none ${
+                        isSelected
+                          ? 'border-[#B85C72] bg-[#FFF9F7]/80 shadow-sm scale-[1.01]'
+                          : 'border-[#F5DDE1] bg-white hover:border-[#B85C72]/50 hover:bg-[#FFF9F7]/20'
+                      }`}
+                    >
+                      <img
+                        src={a.photoUrl}
+                        alt={a.name}
+                        referrerPolicy="no-referrer"
+                        className="w-12 h-12 object-cover rounded-full shadow-xs mb-2 shrink-0"
+                      />
+                      <h4 className="font-serif text-xs font-bold text-[#24191B] truncate max-w-full">
+                        {a.name}
+                      </h4>
+                      <span className="text-[8px] text-[#B85C72] font-semibold mt-0.5 uppercase tracking-wider block">
+                        {a.role.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Select Date and Time Grid */}

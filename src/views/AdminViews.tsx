@@ -9,7 +9,7 @@ import { MockDB } from '../data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, Appointment, WebsiteSettings, Notification } from '../types';
 import { Button, StatusBadge, EmptyState, Toast, ImageUploader } from '../components/Common';
 import { Modal } from '../components/Modal';
-import { signInAdminWithGoogle, signOutAdmin, isCurrentUserAdmin } from '../firebaseSync';
+import { signInAdminWithGoogle, signOutAdmin, isCurrentUserAdmin, forceSeedIndianHeritageTheme } from '../firebaseSync';
 import { auth } from '../firebase';
 
 interface AdminViewsProps {
@@ -318,11 +318,14 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
   };
 
   const deleteEntity = (key: string, id: string) => {
-    if (confirm('Are you absolutely sure you want to delete this resource?')) {
+    if (confirm('Are you absolutely sure you want to delete this resource permanently from the dashboard and Firestore?')) {
       const list = MockDB.get<any[]>(key);
-      const filtered = list.filter(item => item.id !== id);
+      const filtered = list.filter(item => {
+        const itemId = item.id || item.bookingId;
+        return itemId !== id;
+      });
       MockDB.set(key, filtered);
-      triggerToast('Resource deleted successfully.');
+      triggerToast('Resource deleted permanently from Firestore.');
     }
   };
 
@@ -611,6 +614,35 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
               ))}
             </div>
 
+            {/* Indian Heritage & Village Theme Database Seeder */}
+            <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <h3 className="font-serif text-lg font-bold text-amber-900 flex items-center gap-2">
+                  <span>🏛️</span> Indian Heritage & Village Culture Seeder
+                </h3>
+                <p className="text-xs text-amber-800 leading-relaxed max-w-xl">
+                  Instantly seed your live Firestore cloud database with beautiful traditional Indian wedding services, Ayurvedic wellness therapies, heritage hair weavers, real marigold/henna gallery visuals, and authentic customer reviews.
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  if (confirm('Are you absolutely sure you want to seed the Indian Heritage theme? This will write traditional Indian services, packages, artists, and reviews directly to your live Firestore database.')) {
+                    try {
+                      triggerToast('Seeding Indian Heritage theme to Firestore...');
+                      await forceSeedIndianHeritageTheme();
+                      triggerToast('Theme seeded successfully! Refreshing dashboard...');
+                      window.location.reload();
+                    } catch (err: any) {
+                      triggerToast(`Failed to seed database: ${err.message || err}`);
+                    }
+                  }
+                }}
+                className="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white text-xs font-sans font-bold tracking-wider uppercase rounded-xl transition-all duration-300 shadow-md cursor-pointer shrink-0"
+              >
+                Seed to Cloud Firestore
+              </button>
+            </div>
+
             {/* Notifications Activity logs */}
             {notifications.length > 0 && (
               <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4 shadow-sm">
@@ -763,6 +795,15 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                                 <MessageCircle className="w-3.5 h-3.5 fill-current" />
                                 Chat
                               </a>
+
+                              <button
+                                onClick={() => deleteEntity('appointments', appt.bookingId)}
+                                className="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-md font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                                title="Delete Appointment Permanently"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -1528,10 +1569,12 @@ exports.sendAutomatedReminders = onSchedule({
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Bio Details *</label>
             <textarea required rows={3} value={artistForm.bio} onChange={e => setArtistForm(p => ({ ...p, bio: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
           </div>
-          <div>
-            <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Photo URL *</label>
-            <input type="text" required value={artistForm.photoUrl} onChange={e => setArtistForm(p => ({ ...p, photoUrl: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
-          </div>
+          <ImageUploader
+            label="Photo (Local File or Remote URL) *"
+            value={artistForm.photoUrl}
+            onChange={val => setArtistForm(p => ({ ...p, photoUrl: val }))}
+            placeholder="e.g. https://images.unsplash.com/photo-..."
+          />
           <Button type="submit" variant="primary" className="w-full">Save Expert</Button>
         </form>
       </Modal>

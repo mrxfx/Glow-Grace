@@ -4,7 +4,7 @@ import {
 } from 'firebase/firestore';
 import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { db, auth, handleFirestoreError, OperationType } from './firebase';
-import { MockDB } from './data';
+import { MockDB, DEFAULT_SERVICES, DEFAULT_PACKAGES, DEFAULT_ARTISTS, DEFAULT_GALLERY, DEFAULT_REVIEWS } from './data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, Appointment, WebsiteSettings, Notification } from './types';
 
 // Admin email from metadata
@@ -524,5 +524,54 @@ export async function dbDeleteNotification(id: string): Promise<void> {
     await deleteDoc(doc(db, 'notifications', id));
   } catch (e) {
     handleFirestoreError(e, OperationType.DELETE, `notifications/${id}`);
+  }
+}
+
+/**
+ * Force Overwrites Firestore collections with the Traditional Indian Heritage Theme default presets
+ */
+export async function forceSeedIndianHeritageTheme(): Promise<void> {
+  try {
+    console.log('Force seeding Indian Heritage Theme to Firestore...');
+    
+    // 1. Seed Services
+    const sBatch = writeBatch(db);
+    DEFAULT_SERVICES.forEach((s) => {
+      sBatch.set(doc(db, 'services', s.id), s);
+    });
+    await sBatch.commit();
+
+    // 2. Seed Packages
+    const pBatch = writeBatch(db);
+    DEFAULT_PACKAGES.forEach((p) => {
+      pBatch.set(doc(db, 'packages', p.id), p);
+    });
+    await pBatch.commit();
+
+    // 3. Seed Artists
+    const aBatch = writeBatch(db);
+    DEFAULT_ARTISTS.forEach((a) => {
+      aBatch.set(doc(db, 'artists', a.id), a);
+    });
+    await aBatch.commit();
+
+    // 4. Seed Gallery
+    const gBatch = writeBatch(db);
+    DEFAULT_GALLERY.forEach((g) => {
+      gBatch.set(doc(db, 'gallery', g.id), g);
+    });
+    await gBatch.commit();
+
+    // 5. Seed Reviews
+    const rBatch = writeBatch(db);
+    DEFAULT_REVIEWS.forEach((r) => {
+      rBatch.set(doc(db, 'reviews', r.id), r);
+    });
+    await rBatch.commit();
+
+    console.log('Indian Heritage Theme force seeded to Firestore successfully.');
+  } catch (error) {
+    console.error('Failed to force seed Indian Heritage Theme to Firestore:', error);
+    throw error;
   }
 }

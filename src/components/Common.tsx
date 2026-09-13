@@ -182,7 +182,7 @@ export const StatusBadge: React.FC<{ status: 'Pending' | 'Confirmed' | 'Complete
   );
 };
 
-// Interactive Dual-mode (Local File or Remote URL) Image Uploader
+// Interactive Dual-mode (Local File or Remote URL) Image Uploader with ImgBB integration
 interface ImageUploaderProps {
   value: string;
   onChange: (value: string) => void;
@@ -196,24 +196,49 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   label = "Upload Image",
   placeholder = "https://images.unsplash.com/..."
 }) => {
-  const [activeTab, setActiveTab] = React.useState<'local' | 'url'>(value.startsWith('data:image/') ? 'local' : 'url');
+  const [activeTab, setActiveTab] = React.useState<'local' | 'url'>('local');
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          onChange(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const apiKey = (import.meta as any).env?.VITE_IMGBB_API_KEY || 'aa84d46cbcd6fe518b023f14655abb69';
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed (Status ${response.status})`);
+      }
+
+      const result = await response.json();
+      if (result && result.success && result.data && result.data.url) {
+        onChange(result.data.url);
+      } else {
+        throw new Error(result?.error?.message || 'Could not parse response from ImgBB.');
+      }
+    } catch (err) {
+      console.error('ImgBB Upload Error:', err);
+      setUploadError(err instanceof Error ? err.message : 'Error uploading image to ImgBB.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const clearImage = () => {
     onChange('');
+    setUploadError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -226,14 +251,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="flex bg-stone-100 rounded-lg p-0.5 border border-stone-200">
           <button
             type="button"
-            onClick={() => setActiveTab('local')}
+            onClick={() => { setActiveTab('local'); setUploadError(null); }}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 ${activeTab === 'local' ? 'bg-white text-[#B85C72] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
           >
             <Upload className="w-3 h-3" /> Local File
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('url')}
+            onClick={() => { setActiveTab('url'); setUploadError(null); }}
             className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer flex items-center gap-1 ${activeTab === 'url' ? 'bg-white text-[#B85C72] shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
           >
             <Link className="w-3 h-3" /> Image Link
@@ -243,19 +268,25 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       {activeTab === 'local' ? (
         <div className="space-y-3">
-          {value && value.startsWith('data:image/') ? (
-            <div className="relative border border-[#F5DDE1] rounded-2xl p-2 bg-[#FFF9F7]/30 flex items-center gap-3">
-              <img src={value} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0" />
+          {isUploading ? (
+            <div className="border border-dashed border-[#F5DDE1] rounded-2xl p-6 flex flex-col items-center justify-center bg-[#FFF9F7]/10 space-y-2.5">
+              <Loader2 className="w-6 h-6 text-[#B85C72] animate-spin" />
+              <span className="text-xs font-bold text-[#24191B] animate-pulse">Uploading file to ImgBB...</span>
+              <span className="text-[9px] text-stone-400">Your hosted image URL will be saved inside the database.</span>
+            </div>
+          ) : value ? (
+            <div className="relative border border-[#F5DDE1] rounded-2xl p-2 bg-[#FFF9F7]/30 flex items-center gap-3 animate-fade-in">
+              <img src={value} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-stone-200 shrink-0" referrerPolicy="no-referrer" />
               <div className="flex-1 min-w-0">
                 <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                  <FileImage className="w-3 h-3" /> Local image loaded
+                  <FileImage className="w-3 h-3" /> ImgBB Upload Success
                 </span>
-                <p className="text-[9px] text-stone-400 mt-0.5 truncate">Base64 Data URI encoded directly</p>
+                <p className="text-[9px] text-stone-400 mt-0.5 truncate">{value}</p>
               </div>
               <button
                 type="button"
                 onClick={clearImage}
-                className="p-1.5 bg-rose-50 text-[#B85C72] hover:bg-rose-100 rounded-xl cursor-pointer"
+                className="p-1.5 bg-rose-50 text-[#B85C72] hover:bg-rose-100 rounded-xl cursor-pointer transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -266,8 +297,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               className="border-2 border-dashed border-[#F5DDE1] hover:border-[#B85C72] rounded-2xl p-6 flex flex-col items-center justify-center text-center bg-[#FFF9F7]/10 hover:bg-[#FFF9F7]/40 transition-all cursor-pointer group"
             >
               <Upload className="w-6 h-6 text-[#B85C72] mb-2 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-bold text-[#24191B] block">Drag & Drop or Click</span>
-              <span className="text-[9px] text-stone-400 mt-1 block">Supports JPG, PNG or WEBP. Max 2MB recommended.</span>
+              <span className="text-xs font-bold text-[#24191B] block">Drag & Drop or Click to Upload</span>
+              <span className="text-[9px] text-stone-400 mt-1 block">Powered by ImgBB API v1. Max 32MB files.</span>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -277,18 +308,25 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               />
             </div>
           )}
+
+          {uploadError && (
+            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-[10px] text-rose-600 font-semibold flex items-start gap-2 animate-fade-in">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span>{uploadError}</span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
           <input
             type="text"
-            value={value && !value.startsWith('data:image/') ? value : ''}
+            value={value}
             onChange={(e) => onChange(e.target.value)}
             className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B] outline-none placeholder-stone-400"
             placeholder={placeholder}
           />
-          {value && !value.startsWith('data:image/') && (
-            <div className="border border-stone-200 rounded-2xl p-2 bg-stone-50/50 flex items-center gap-3">
+          {value && (
+            <div className="border border-stone-200 rounded-2xl p-2 bg-stone-50/50 flex items-center gap-3 animate-fade-in">
               <img src={value} alt="Preview" className="w-12 h-12 rounded-xl object-cover shrink-0 border border-stone-200" referrerPolicy="no-referrer" />
               <div className="flex-1 min-w-0">
                 <span className="text-[10px] text-stone-500 font-bold block">Remote Image URL</span>
