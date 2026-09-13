@@ -259,7 +259,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                 <input
                   id="phone-input"
                   type="tel"
-                  placeholder="e.g. +91 9876543210"
+                  placeholder="e.g. +91 60332 00000"
                   value={phone}
                   onChange={e => {
                     setPhone(e.target.value);
@@ -679,13 +679,26 @@ export const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
   whatsappNumber
 }) => {
   const getWhatsAppMessage = () => {
-    return `Hi Glow & Grace, I would like to check status for my appointment:
-*Booking ID:* ${booking.bookingId}
-*Name:* ${booking.customerName}
-*Service:* ${booking.serviceName}
-*Date:* ${booking.date}
-*Time:* ${booking.time}
-*Status:* Pending Confirmation 💕`;
+    return `✨ *GLOW & GRACE BEAUTY SALON* ✨
+*APPOINTMENT RESERVATION SUMMARY*
+
+Hello Glow & Grace Salon,
+
+I have just successfully submitted an online appointment request and would like to confirm my slot! Here is my reservation detail receipt:
+
+=====================================
+🔑 *Booking ID:* ${booking.bookingId}
+👤 *Client Name:* ${booking.customerName}
+🌸 *Service Selected:* ${booking.serviceName}
+💇 *Preferred Artist:* ${booking.artistName || 'Any Available Artist'}
+📅 *Scheduled Date:* ${booking.date}
+⏰ *Time Slot:* ${booking.time}:00
+=====================================
+
+💌 *Special Requests:* ${booking.specialRequest || 'None'}
+🕒 *Status:* Pending Confirmation
+
+Kindly confirm my appointment slot at your earliest convenience. Thank you so much! 💕`;
   };
 
   const whatsappUrl = `https://wa.me/${whatsappNumber.replace(/[^0-9+]/g, '')}?text=${encodeURIComponent(getWhatsAppMessage())}`;

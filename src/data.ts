@@ -306,10 +306,10 @@ export const DEFAULT_OFFERS: Offer[] = [
 ];
 
 export const DEFAULT_SETTINGS: WebsiteSettings = {
-  whatsappNumber: '+919876543210',
+  whatsappNumber: '+916033271400',
   salonAddress: '12 Luxury Boulevard, Palace Row, Near Heritage Fountain, Agartala, Tripura - 799001',
   emailAddress: 'hello@glowandgrace.in',
-  phoneNumber: '+91 98765 43210',
+  phoneNumber: '+91 60332 71400',
   openingHours: 'Monday – Sunday, 10:00 AM – 8:00 PM',
   instagramUrl: 'https://instagram.com/glowandgrace_salon',
   mapsUrl: 'https://maps.google.com/?q=Agartala+Tripura',
@@ -320,7 +320,7 @@ export const DEFAULT_APPOINTMENTS: Appointment[] = [
   {
     bookingId: 'GG-2026-00125',
     customerName: 'Pooja Roy',
-    phone: '9876543210',
+    phone: '6033271400',
     email: 'pooja.roy@example.com',
     serviceId: 's2',
     serviceName: 'Party Makeup',
@@ -406,7 +406,8 @@ export class MockDB {
       if (!notifications || notifications.includes('Pooja Roy')) {
         localStorage.setItem('gg_notifications', '[]');
       }
-      if (!localStorage.getItem('gg_settings')) {
+      const cachedSettings = localStorage.getItem('gg_settings');
+      if (!cachedSettings || cachedSettings.includes('9876543210')) {
         localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
       }
     } else {
@@ -417,7 +418,13 @@ export class MockDB {
       if (!localStorage.getItem('gg_gallery')) localStorage.setItem('gg_gallery', JSON.stringify(DEFAULT_GALLERY));
       if (!localStorage.getItem('gg_reviews')) localStorage.setItem('gg_reviews', JSON.stringify(DEFAULT_REVIEWS));
       if (!localStorage.getItem('gg_offers')) localStorage.setItem('gg_offers', JSON.stringify(DEFAULT_OFFERS));
-      if (!localStorage.getItem('gg_settings')) localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
+      
+      const cachedSettings = localStorage.getItem('gg_settings');
+      if (!cachedSettings || cachedSettings.includes('9876543210')) {
+        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
+      } else {
+        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS)); // Force overwrite to always keep up to date
+      }
       if (!localStorage.getItem('gg_appointments')) localStorage.setItem('gg_appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
       if (!localStorage.getItem('gg_notifications')) localStorage.setItem('gg_notifications', JSON.stringify(DEFAULT_NOTIFICATIONS));
     }
