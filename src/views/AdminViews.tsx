@@ -126,27 +126,27 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#24191B] text-[#FFF9F7] px-6 py-12 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF9F7] text-[#24191B] px-6 py-12 relative overflow-hidden">
         {/* Background gradient design */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#B85C72]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#B85C72]/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="w-full max-w-md bg-stone-900 border border-[#F5DDE1]/15 p-8 md:p-10 rounded-3xl space-y-8 shadow-2xl relative z-10 animate-scale-up">
+        <div className="w-full max-w-md bg-white border border-[#F5DDE1] p-8 md:p-10 rounded-3xl space-y-8 shadow-2xl relative z-10 animate-scale-up">
           <div className="text-center space-y-2">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4A373] block">Glow & Grace Secure Desk</span>
-            <h2 className="font-serif text-3xl font-extrabold text-[#FFF9F7]">Admin Login</h2>
-            <p className="text-xs text-[#FFF9F7]/60">Enter credentials or use Google auth for real-time cloud sync.</p>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-[#B85C72] block">Glow & Grace Secure Desk</span>
+            <h2 className="font-serif text-3xl font-extrabold text-[#24191B]">Admin Login</h2>
+            <p className="text-xs text-stone-500">Enter credentials or use Google auth for real-time cloud sync.</p>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-5">
             {loginError && (
-              <div className="p-4 bg-red-950/40 border border-red-500/40 text-red-300 text-xs rounded-xl flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
                 <p>{loginError}</p>
               </div>
             )}
 
             <div>
-              <label htmlFor="admin-username" className="block text-[10px] uppercase tracking-widest font-bold text-[#FFF9F7]/60 mb-2">
+              <label htmlFor="admin-username" className="block text-[10px] uppercase tracking-widest font-bold text-stone-500 mb-2">
                 Desk Username
               </label>
               <input
@@ -156,12 +156,12 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 placeholder="e.g. admin"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white outline-none focus:border-[#D4A373] transition-colors"
+                className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm text-stone-800 outline-none focus:border-[#D4A373] transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="admin-passcode" className="block text-[10px] uppercase tracking-widest font-bold text-[#FFF9F7]/60 mb-2">
+              <label htmlFor="admin-passcode" className="block text-[10px] uppercase tracking-widest font-bold text-stone-500 mb-2">
                 Desk Passcode
               </label>
               <input
@@ -171,19 +171,19 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 placeholder="••••••••"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm text-white outline-none focus:border-[#D4A373] transition-colors"
+                className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm text-stone-800 outline-none focus:border-[#D4A373] transition-colors"
               />
             </div>
 
-            <Button type="submit" variant="accent" className="w-full font-bold">
+            <Button type="submit" variant="accent" className="w-full font-bold shadow-md">
               Unlock Terminal
             </Button>
           </form>
 
           <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink mx-4 text-[10px] text-white/40 uppercase tracking-widest font-semibold">Or cloud sync option</span>
-            <div className="flex-grow border-t border-white/10"></div>
+            <div className="flex-grow border-t border-[#F5DDE1]"></div>
+            <span className="flex-shrink mx-4 text-[10px] text-stone-400 uppercase tracking-widest font-semibold">Or cloud sync option</span>
+            <div className="flex-grow border-t border-[#F5DDE1]"></div>
           </div>
 
           <button
@@ -200,7 +200,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
           </button>
 
           <div className="text-center">
-            <button onClick={() => navigate('home')} className="text-xs text-white/50 hover:text-white underline cursor-pointer">
+            <button onClick={() => navigate('home')} className="text-xs text-stone-400 hover:text-[#B85C72] underline cursor-pointer font-medium">
               Return to Website homepage
             </button>
           </div>
@@ -385,34 +385,34 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
   };
 
   return (
-    <div className="min-h-screen bg-stone-950 text-white flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#FFF9F7] text-[#24191B] flex flex-col lg:flex-row">
       {toastMessage && (
         <Toast message={toastMessage} type="info" onClose={() => setToastMessage(null)} />
       )}
 
       {/* --- SIDEBAR --- */}
-      <aside className="w-full lg:w-64 bg-stone-900 border-b lg:border-b-0 lg:border-r border-white/10 p-6 flex flex-col justify-between shrink-0">
+      <aside className="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-[#F5DDE1] p-6 flex flex-col justify-between shrink-0">
         <div className="space-y-8">
           {/* Header title */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-[#D4A373]" />
+              <Sparkles className="w-5 h-5 text-[#B85C72]" />
               <div>
-                <span className="font-serif text-lg font-bold tracking-wider text-[#FFF9F7] block">Glow & Grace</span>
+                <span className="font-serif text-lg font-bold tracking-wider text-[#24191B] block">Glow & Grace</span>
                 <span className="text-[8px] font-sans tracking-[0.2em] text-[#D4A373] block uppercase">Admin Console</span>
               </div>
             </div>
 
             {/* Cloud Sync Status Badge */}
-            <div className="mt-4 p-2 bg-stone-950 rounded-xl border border-white/5 flex items-center justify-between">
+            <div className="mt-4 p-2 bg-[#FFF9F7] rounded-xl border border-[#F5DDE1]/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isFirebaseSynced ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                <span className="text-[10px] uppercase font-bold tracking-wider text-white/60">Cloud Sync</span>
+                <span className={`w-2 h-2 rounded-full ${isFirebaseSynced ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">Cloud Sync</span>
               </div>
               <span className={`text-[9px] font-sans px-1.5 py-0.5 rounded font-semibold ${
                 isFirebaseSynced 
-                  ? 'bg-emerald-950/30 text-emerald-400 border border-emerald-500/15' 
-                  : 'bg-amber-950/30 text-amber-400 border border-amber-500/15'
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' 
+                  : 'bg-amber-50 text-amber-600 border border-amber-200'
               }`}>
                 {isFirebaseSynced ? 'Active' : 'Offline'}
               </span>
@@ -440,8 +440,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 }}
                 className={`flex items-center justify-between px-4 py-3 rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer ${
                   activeTab === tab.id 
-                    ? 'bg-[#B85C72] text-white' 
-                    : 'text-white/70 hover:bg-white/5 hover:text-white'
+                    ? 'bg-[#B85C72] text-white shadow-md shadow-rose-900/10' 
+                    : 'text-stone-600 hover:bg-[#F5DDE1]/30 hover:text-[#B85C72]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -449,7 +449,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                   <span>{tab.label}</span>
                 </div>
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="bg-[#D4A373] text-black text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="bg-[#B85C72] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                     {tab.count}
                   </span>
                 )}
@@ -459,10 +459,10 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
         </div>
 
         {/* Footer logout button */}
-        <div className="pt-6 border-t border-white/5 mt-8 lg:mt-0">
+        <div className="pt-6 border-t border-[#F5DDE1] mt-8 lg:mt-0">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs text-red-400 hover:bg-red-950/20 hover:text-red-300 transition-colors cursor-pointer text-left"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer text-left font-semibold"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
@@ -474,10 +474,10 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
       <main className="flex-grow p-6 md:p-10 max-w-7xl mx-auto w-full overflow-y-auto space-y-8">
         
         {/* --- HEADER DESK BAR --- */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/5 pb-6 gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-[#F5DDE1] pb-6 gap-4">
           <div>
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4A373]">Workspace</span>
-            <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[#FFF9F7] capitalize">
+            <h2 className="font-serif text-2xl md:text-3xl font-extrabold text-[#24191B] capitalize">
               {activeTab === 'dashboard' ? 'Overview Dashboard' : `${activeTab} Management`}
             </h2>
           </div>
@@ -487,19 +487,19 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
             <div className="relative">
               <button 
                 onClick={markAllNotifRead}
-                className="p-2.5 bg-stone-900 rounded-full border border-white/10 hover:border-white/25 text-white/80 transition-colors cursor-pointer relative"
+                className="p-2.5 bg-white rounded-full border border-stone-200 hover:border-stone-300 text-stone-700 transition-colors cursor-pointer relative"
                 title="Mark all as read"
               >
                 <Bell className="w-4 h-4" />
                 {notifications.some(n => !n.isRead) && (
-                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#B85C72] rounded-full border-2 border-stone-900" />
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#B85C72] rounded-full border-2 border-white" />
                 )}
               </button>
             </div>
 
-            <div className="bg-stone-900 px-4 py-2 rounded-xl border border-white/10 text-xs">
-              <span className="text-white/40 block">Desk Operator</span>
-              <span className="text-white font-bold font-mono">rahulhaldarx15</span>
+            <div className="bg-white px-4 py-2 rounded-xl border border-stone-200 text-xs shadow-sm">
+              <span className="text-stone-400 block font-semibold text-[10px] uppercase">Desk Operator</span>
+              <span className="text-stone-800 font-bold font-mono">rahulhaldarx15</span>
             </div>
           </div>
         </div>
@@ -517,32 +517,32 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 { label: 'Confirmed Bookings', val: confirmedCount, desc: 'Scheduled slots' },
                 { label: 'Unique Customers', val: uniqueCustomersCount, desc: 'Logged on desk' }
               ].map((m, i) => (
-                <div key={i} className={`p-6 rounded-2xl border ${
-                  m.highlight ? 'bg-[#B85C72]/10 border-[#B85C72]' : 'bg-stone-900 border-white/10'
+                <div key={i} className={`p-6 rounded-2xl border transition-all ${
+                  m.highlight ? 'bg-[#B85C72]/5 border-[#B85C72] shadow-sm' : 'bg-white border-stone-200 shadow-sm'
                 }`}>
-                  <span className="text-[10px] uppercase text-white/40 block font-bold mb-1">{m.label}</span>
-                  <span className="text-2xl md:text-3xl font-serif font-extrabold text-[#FFF9F7] block">{m.val}</span>
-                  <span className="text-xs text-white/50 mt-1 block">{m.desc}</span>
+                  <span className="text-[10px] uppercase text-stone-400 block font-bold mb-1 tracking-wider">{m.label}</span>
+                  <span className="text-2xl md:text-3xl font-serif font-extrabold text-[#B85C72] block">{m.val}</span>
+                  <span className="text-xs text-stone-500 mt-1 block">{m.desc}</span>
                 </div>
               ))}
             </div>
 
             {/* Notifications Activity logs */}
             {notifications.length > 0 && (
-              <div className="bg-stone-900 border border-white/10 rounded-2xl p-6 space-y-4">
-                <div className="flex justify-between items-center border-b border-white/10 pb-3">
-                  <h3 className="font-serif text-lg font-bold">🔔 New Notifications</h3>
-                  <button onClick={markAllNotifRead} className="text-xs text-[#D4A373] hover:underline cursor-pointer">
+              <div className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center border-b border-stone-200 pb-3">
+                  <h3 className="font-serif text-lg font-bold text-[#24191B] flex items-center gap-2"><span>🔔</span> New Notifications</h3>
+                  <button onClick={markAllNotifRead} className="text-xs text-[#D4A373] hover:underline cursor-pointer font-semibold">
                     Mark all read
                   </button>
                 </div>
-                <div className="divide-y divide-white/5 max-h-60 overflow-y-auto">
+                <div className="divide-y divide-stone-100 max-h-60 overflow-y-auto">
                   {notifications.map(n => (
                     <div key={n.id} className="py-3.5 flex items-start gap-3.5">
-                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${n.isRead ? 'bg-white/10' : 'bg-[#B85C72]'}`} />
+                      <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${n.isRead ? 'bg-stone-200' : 'bg-[#B85C72]'}`} />
                       <div>
-                        <p className="text-xs font-bold text-white/90">{n.title}</p>
-                        <p className="text-xs text-white/60 mt-0.5">{n.message}</p>
+                        <p className="text-xs font-bold text-stone-700">{n.title}</p>
+                        <p className="text-xs text-stone-500 mt-0.5">{n.message}</p>
                       </div>
                     </div>
                   ))}
@@ -556,15 +556,15 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
         {activeTab === 'appointments' && (
           <div className="space-y-6 animate-fade-in">
             {/* Search and Filters headers */}
-            <div className="bg-stone-900 border border-white/10 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center">
+            <div className="bg-white border border-stone-200 p-5 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
               <div className="relative flex-grow w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
                 <input
                   type="text"
                   placeholder="Search bookings by ID, client name, or phone..."
                   value={appSearch}
                   onChange={e => setAppSearch(e.target.value)}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-xs text-white outline-none focus:border-[#D4A373]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl py-3 pl-12 pr-4 text-xs text-stone-700 outline-none focus:border-[#D4A373] transition-all"
                 />
               </div>
 
@@ -573,7 +573,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 <select
                   value={appFilterStatus}
                   onChange={e => setAppFilterStatus(e.target.value)}
-                  className="bg-stone-950 border border-white/10 text-white text-xs px-4 py-3 rounded-xl outline-none cursor-pointer"
+                  className="bg-stone-50 border border-stone-200 text-stone-700 text-xs px-4 py-3 rounded-xl outline-none cursor-pointer focus:border-[#D4A373] transition-all"
                 >
                   <option value="All">All Statuses</option>
                   <option value="Pending">Pending</option>
@@ -586,7 +586,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 <select
                   value={appFilterService}
                   onChange={e => setAppFilterService(e.target.value)}
-                  className="bg-stone-950 border border-white/10 text-white text-xs px-4 py-3 rounded-xl outline-none cursor-pointer max-w-[180px]"
+                  className="bg-stone-50 border border-stone-200 text-stone-700 text-xs px-4 py-3 rounded-xl outline-none cursor-pointer max-w-[180px] focus:border-[#D4A373] transition-all"
                 >
                   <option value="All">All Services</option>
                   {services.map(s => (
@@ -598,11 +598,11 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
             {/* List Table of appointments */}
             {filteredAppointments.length > 0 ? (
-              <div className="bg-stone-900 border border-white/10 rounded-2xl overflow-hidden shadow-xl">
+              <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-md">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left text-xs">
                     <thead>
-                      <tr className="bg-stone-950 text-white/50 border-b border-white/10 uppercase tracking-widest font-sans font-bold">
+                      <tr className="bg-stone-50 text-stone-500 border-b border-stone-200 uppercase tracking-widest font-sans font-bold">
                         <th className="p-4">ID</th>
                         <th className="p-4">Customer Details</th>
                         <th className="p-4">Service</th>
@@ -611,22 +611,22 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                         <th className="p-4">Desk Notes / Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-stone-100 text-stone-700">
                       {filteredAppointments.map(appt => (
-                        <tr key={appt.bookingId} className="hover:bg-white/5 transition-colors">
-                          <td className="p-4 font-mono font-bold text-[#D4A373]">{appt.bookingId}</td>
+                        <tr key={appt.bookingId} className="hover:bg-stone-50/60 transition-colors">
+                          <td className="p-4 font-mono font-bold text-[#B85C72]">{appt.bookingId}</td>
                           <td className="p-4 space-y-0.5">
-                            <span className="font-bold text-white block">{appt.customerName}</span>
-                            <span className="text-white/60 block">{appt.phone}</span>
-                            <span className="text-white/40 block break-all">{appt.email}</span>
+                            <span className="font-bold text-stone-800 block">{appt.customerName}</span>
+                            <span className="text-stone-500 block font-medium">{appt.phone}</span>
+                            <span className="text-stone-400 block break-all text-[11px]">{appt.email}</span>
                           </td>
                           <td className="p-4">
-                            <span className="font-semibold text-white block">{appt.serviceName}</span>
-                            {appt.artistName && <span className="text-[10px] text-white/50">Artist: {appt.artistName}</span>}
+                            <span className="font-semibold text-stone-800 block">{appt.serviceName}</span>
+                            {appt.artistName && <span className="text-[10px] text-stone-500 font-medium">Artist: {appt.artistName}</span>}
                           </td>
                           <td className="p-4 space-y-0.5">
-                            <span className="font-semibold text-white block">{appt.date}</span>
-                            <span className="text-white/60 block">{appt.time}</span>
+                            <span className="font-semibold text-stone-800 block">{appt.date}</span>
+                            <span className="text-stone-500 block">{appt.time}</span>
                           </td>
                           <td className="p-4">
                             <StatusBadge status={appt.status} />
@@ -634,11 +634,11 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                           <td className="p-4 space-y-3 max-w-[280px]">
                             {/* Notes update area */}
                             <input
-                              type="text"
-                              placeholder="Desk logs (e.g. skin analysis clear)"
-                              value={apptNotes[appt.bookingId] ?? appt.adminNotes ?? ''}
-                              onChange={e => handleApptNotesChange(appt.bookingId, e.target.value)}
-                              className="w-full bg-stone-950 border border-white/10 rounded-md py-1.5 px-3 text-[11px]"
+                               type="text"
+                               placeholder="Desk logs (e.g. skin analysis clear)"
+                               value={apptNotes[appt.bookingId] ?? appt.adminNotes ?? ''}
+                               onChange={e => handleApptNotesChange(appt.bookingId, e.target.value)}
+                               className="w-full bg-stone-50 border border-stone-200 rounded-md py-1.5 px-3 text-[11px] text-stone-700 outline-none focus:border-[#D4A373] transition-all"
                             />
 
                             {/* Active operations buttons */}
@@ -713,35 +713,35 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
             {/* List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {services.map(s => (
-                <div key={s.id} className="bg-stone-900 border border-white/10 rounded-2xl overflow-hidden p-5 flex flex-col justify-between">
+                <div key={s.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-sm">
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-[#D4A373] uppercase tracking-widest">{s.category}</span>
+                      <span className="text-[10px] text-[#B85C72] uppercase font-bold tracking-widest">{s.category}</span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        s.status === 'Active' ? 'bg-emerald-950 border border-emerald-500/30 text-emerald-300' : 'bg-red-950 border border-red-500/30 text-red-300'
+                        s.status === 'Active' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' : 'bg-red-50 border border-red-200 text-red-600'
                       }`}>
                         {s.status}
                       </span>
                     </div>
-                    <h4 className="font-serif text-lg font-bold">{s.name}</h4>
-                    <p className="text-xs text-white/60 line-clamp-2">{s.description}</p>
+                    <h4 className="font-serif text-lg font-bold text-stone-800">{s.name}</h4>
+                    <p className="text-xs text-stone-500 line-clamp-2">{s.description}</p>
                     <span className="text-base font-serif font-extrabold text-[#B85C72] block">₹{s.startingPrice}</span>
                   </div>
 
-                  <div className="flex gap-2 border-t border-white/5 pt-4 mt-4">
+                  <div className="flex gap-2 border-t border-stone-100 pt-4 mt-4">
                     <button
                       onClick={() => {
                         setSelectedFormId(s.id);
                         setServiceForm({ name: s.name, description: s.description, startingPrice: s.startingPrice, category: s.category, duration: s.duration, status: s.status, imageUrl: s.imageUrl });
                         setActiveFormType('service');
                       }}
-                      className="flex-1 py-2 bg-stone-950 hover:bg-white/5 rounded-lg border border-white/10 text-xs font-semibold cursor-pointer text-center"
+                      className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteEntity('services', s.id)}
-                      className="p-2 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-lg cursor-pointer"
+                      className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -771,36 +771,36 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {packages.map(p => (
-                <div key={p.id} className="bg-stone-900 border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
+                <div key={p.id} className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <h4 className="font-serif text-xl font-bold">{p.name}</h4>
-                      {p.isPopular && <span className="bg-[#D4A373] text-black text-[9px] px-2 py-0.5 rounded-full font-bold">POPULAR</span>}
+                      <h4 className="font-serif text-xl font-bold text-stone-800">{p.name}</h4>
+                      {p.isPopular && <span className="bg-[#B85C72] text-white text-[9px] px-2 py-0.5 rounded-full font-bold">POPULAR</span>}
                     </div>
-                    <p className="text-xs text-white/60">{p.description}</p>
+                    <p className="text-xs text-stone-500">{p.description}</p>
                     <span className="text-2xl font-serif text-[#B85C72] block">₹{p.price}</span>
                     
-                    <ul className="space-y-1.5 text-xs text-white/80 pt-2 border-t border-white/5">
+                    <ul className="space-y-1.5 text-xs text-stone-600 pt-2 border-t border-stone-100">
                       {p.features.map((f, i) => (
-                        <li key={i}>&bull; {f}</li>
+                        <li key={i} className="flex items-center gap-1.5"><span className="text-[#B85C72]">&bull;</span> {f}</li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="flex gap-2 border-t border-white/5 pt-4 mt-6">
+                  <div className="flex gap-2 border-t border-stone-100 pt-4 mt-6">
                     <button
                       onClick={() => {
                         setSelectedFormId(p.id);
                         setPackageForm({ name: p.name, price: p.price, description: p.description, features: p.features.join('\n'), isPopular: p.isPopular, status: p.status });
                         setActiveFormType('package');
                       }}
-                      className="flex-1 py-2 bg-stone-950 hover:bg-white/5 rounded-lg border border-white/10 text-xs font-semibold cursor-pointer text-center"
+                      className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteEntity('packages', p.id)}
-                      className="p-2 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-lg cursor-pointer"
+                      className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -829,15 +829,15 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
             <div className="columns-1 sm:columns-3 gap-6 space-y-6">
               {gallery.map(g => (
-                <div key={g.id} className="break-inside-avoid bg-stone-900 border border-white/10 rounded-2xl overflow-hidden p-4 space-y-3">
+                <div key={g.id} className="break-inside-avoid bg-white border border-stone-200 rounded-2xl overflow-hidden p-4 space-y-3 shadow-sm">
                   <img src={g.imageUrl} alt={g.alt} className="w-full h-auto rounded-xl" />
                   <div>
-                    <span className="text-[9px] text-[#D4A373] uppercase font-bold tracking-widest block">{g.category}</span>
-                    <h5 className="font-serif text-sm font-bold text-white mt-1">{g.title}</h5>
+                    <span className="text-[9px] text-[#B85C72] uppercase font-bold tracking-widest block">{g.category}</span>
+                    <h5 className="font-serif text-sm font-bold text-stone-800 mt-1">{g.title}</h5>
                   </div>
                   <button
                     onClick={() => deleteEntity('gallery', g.id)}
-                    className="w-full py-2 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
                     <Trash2 className="w-4 h-4" /> Delete Shot
                   </button>
@@ -866,41 +866,41 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {artists.map(a => (
-                <div key={a.id} className="bg-stone-900 border border-white/10 rounded-2xl overflow-hidden p-5 space-y-4">
-                  <div className="aspect-square w-24 h-24 rounded-full overflow-hidden mx-auto border-2 border-[#D4A373]">
+                <div key={a.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden p-5 space-y-4 shadow-sm">
+                  <div className="aspect-square w-24 h-24 rounded-full overflow-hidden mx-auto border-2 border-[#B85C72]">
                     <img src={a.photoUrl} alt={a.name} className="w-full h-full object-cover" />
                   </div>
 
                   <div className="text-center space-y-1">
-                    <h4 className="font-serif text-lg font-bold">{a.name}</h4>
-                    <span className="text-xs text-[#D4A373] font-semibold block">{a.role}</span>
+                    <h4 className="font-serif text-lg font-bold text-stone-800">{a.name}</h4>
+                    <span className="text-xs text-[#B85C72] font-semibold block">{a.role}</span>
                   </div>
 
-                  <div className="border-t border-white/5 pt-3 space-y-1.5 text-xs text-white/70">
+                  <div className="border-t border-stone-100 pt-3 space-y-1.5 text-xs text-stone-600">
                     <div className="flex justify-between">
                       <span>Experience:</span>
-                      <span className="font-bold text-white">{a.experience}</span>
+                      <span className="font-bold text-stone-800">{a.experience}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Specialty:</span>
-                      <span className="font-bold text-white">{a.specialty}</span>
+                      <span className="font-bold text-stone-800">{a.specialty}</span>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 border-t border-white/5 pt-4">
+                  <div className="flex gap-2 border-t border-stone-100 pt-4">
                     <button
                       onClick={() => {
                         setSelectedFormId(a.id);
                         setArtistForm({ name: a.name, role: a.role, experience: a.experience, specialty: a.specialty, bio: a.bio, photoUrl: a.photoUrl, status: a.status, rating: a.rating });
                         setActiveFormType('artist');
                       }}
-                      className="flex-1 py-2 bg-stone-950 hover:bg-white/5 rounded-lg border border-white/10 text-xs font-semibold cursor-pointer text-center"
+                      className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteEntity('artists', a.id)}
-                      className="p-2 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-lg cursor-pointer"
+                      className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -916,37 +916,37 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
           <div className="space-y-6 animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {reviews.map(r => (
-                <div key={r.id} className="bg-stone-900 border border-white/10 rounded-2xl p-6 space-y-4">
+                <div key={r.id} className="bg-white border border-stone-200 rounded-2xl p-6 space-y-4 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <img src={r.profileImageUrl} alt={r.customerName} className="w-9 h-9 rounded-full object-cover" />
+                      <img src={r.profileImageUrl} alt={r.customerName} className="w-9 h-9 rounded-full object-cover border border-stone-100" />
                       <div>
-                        <h5 className="font-bold text-sm text-white">{r.customerName}</h5>
-                        <span className="text-[10px] text-white/50">{r.serviceName}</span>
+                        <h5 className="font-bold text-sm text-stone-800">{r.customerName}</h5>
+                        <span className="text-[10px] text-stone-400 font-semibold">{r.serviceName}</span>
                       </div>
                     </div>
 
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold border ${
-                      r.status === 'Approved' ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-400' : 'bg-amber-950/40 border-amber-500/30 text-amber-400'
+                      r.status === 'Approved' ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-amber-50 border-amber-200 text-amber-600'
                     }`}>
                       {r.status}
                     </span>
                   </div>
 
-                  <p className="text-xs text-white/70 italic leading-relaxed">&ldquo;{r.reviewContent}&rdquo;</p>
+                  <p className="text-xs text-stone-600 italic leading-relaxed">&ldquo;{r.reviewContent}&rdquo;</p>
 
-                  <div className="flex gap-2 pt-2 border-t border-white/5">
+                  <div className="flex gap-2 pt-2 border-t border-stone-100">
                     {r.status === 'Pending' && (
                       <button
                         onClick={() => approveReview(r.id)}
-                        className="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center gap-1.5 transition-colors"
                       >
                         <Check className="w-4 h-4" /> Approve Feedback
                       </button>
                     )}
                     <button
                       onClick={() => deleteEntity('reviews', r.id)}
-                      className="py-2 px-3 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-lg cursor-pointer text-xs font-semibold flex items-center justify-center gap-1"
+                      className="py-2 px-3 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
@@ -976,40 +976,40 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {offers.map(o => (
-                <div key={o.id} className="bg-stone-900 border border-white/10 rounded-2xl p-6 flex flex-col justify-between">
+                <div key={o.id} className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-[10px] text-[#D4A373] uppercase font-bold tracking-widest">{o.type} offer</span>
+                      <span className="text-[10px] text-[#B85C72] uppercase font-bold tracking-widest">{o.type} offer</span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        o.status === 'Active' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/20' : 'bg-red-950 text-red-400 border border-red-500/20'
+                        o.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'
                       }`}>
                         {o.status}
                       </span>
                     </div>
 
-                    <h4 className="font-serif text-lg font-bold">{o.title}</h4>
-                    <p className="text-xs text-white/60">{o.description}</p>
+                    <h4 className="font-serif text-lg font-bold text-stone-800">{o.title}</h4>
+                    <p className="text-xs text-stone-500">{o.description}</p>
                     {o.code && (
-                      <span className="inline-block bg-white/5 border border-white/10 font-mono text-xs px-3 py-1 rounded text-[#D4A373]">
+                      <span className="inline-block bg-[#FFF9F7] border border-[#F5DDE1] font-mono text-xs px-3 py-1 rounded text-[#B85C72] font-semibold">
                         CODE: {o.code}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex gap-2 border-t border-white/5 pt-4 mt-6">
+                  <div className="flex gap-2 border-t border-stone-100 pt-4 mt-6">
                     <button
                       onClick={() => {
                         setSelectedFormId(o.id);
                         setOfferForm({ title: o.title, description: o.description, code: o.code || '', discountValue: o.discountValue || 0, type: o.type, status: o.status });
                         setActiveFormType('offer');
                       }}
-                      className="flex-1 py-2 bg-stone-950 hover:bg-white/5 rounded-lg border border-white/10 text-xs font-semibold cursor-pointer text-center"
+                      className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => deleteEntity('offers', o.id)}
-                      className="p-2 border border-red-500/20 text-red-400 hover:bg-red-950/20 rounded-lg cursor-pointer"
+                      className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -1022,56 +1022,56 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
 
         {/* TAB 9: WEBSITE SETTINGS */}
         {activeTab === 'settings' && (
-          <div className="bg-stone-900 border border-white/10 p-6 md:p-8 rounded-3xl space-y-6 animate-fade-in max-w-2xl">
-            <h3 className="font-serif text-xl font-bold mb-4">Website Global Settings</h3>
+          <div className="bg-white border border-stone-200 p-6 md:p-8 rounded-3xl space-y-6 animate-fade-in max-w-2xl shadow-sm">
+            <h3 className="font-serif text-xl font-bold mb-4 text-stone-800">Website Global Settings</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-white/50 mb-1 font-semibold uppercase tracking-wider">WhatsApp Number *</label>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">WhatsApp Number *</label>
                 <input
                   type="text"
                   value={settings.whatsappNumber}
                   onChange={e => onSettingsUpdate({ ...settings, whatsappNumber: e.target.value })}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-white"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-1 font-semibold uppercase tracking-wider">Desk Phone Number *</label>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Desk Phone Number *</label>
                 <input
                   type="text"
                   value={settings.phoneNumber}
                   onChange={e => onSettingsUpdate({ ...settings, phoneNumber: e.target.value })}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-white"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-1 font-semibold uppercase tracking-wider">Public Address *</label>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Public Address *</label>
                 <input
                   type="text"
                   value={settings.salonAddress}
                   onChange={e => onSettingsUpdate({ ...settings, salonAddress: e.target.value })}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-white"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-1 font-semibold uppercase tracking-wider">Lounge Email *</label>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Lounge Email *</label>
                 <input
                   type="text"
                   value={settings.emailAddress}
                   onChange={e => onSettingsUpdate({ ...settings, emailAddress: e.target.value })}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-white"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-white/50 mb-1 font-semibold uppercase tracking-wider">Opening Timings *</label>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Opening Timings *</label>
                 <input
                   type="text"
                   value={settings.openingHours}
                   onChange={e => onSettingsUpdate({ ...settings, openingHours: e.target.value })}
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-white"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
                 />
               </div>
             </div>

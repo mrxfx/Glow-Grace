@@ -393,15 +393,57 @@ export class MockDB {
   }
 
   static init() {
-    if (!localStorage.getItem('gg_services')) localStorage.setItem('gg_services', JSON.stringify(DEFAULT_SERVICES));
-    if (!localStorage.getItem('gg_packages')) localStorage.setItem('gg_packages', JSON.stringify(DEFAULT_PACKAGES));
-    if (!localStorage.getItem('gg_artists')) localStorage.setItem('gg_artists', JSON.stringify(DEFAULT_ARTISTS));
-    if (!localStorage.getItem('gg_gallery')) localStorage.setItem('gg_gallery', JSON.stringify(DEFAULT_GALLERY));
-    if (!localStorage.getItem('gg_reviews')) localStorage.setItem('gg_reviews', JSON.stringify(DEFAULT_REVIEWS));
-    if (!localStorage.getItem('gg_offers')) localStorage.setItem('gg_offers', JSON.stringify(DEFAULT_OFFERS));
-    if (!localStorage.getItem('gg_settings')) localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
-    if (!localStorage.getItem('gg_appointments')) localStorage.setItem('gg_appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
-    if (!localStorage.getItem('gg_notifications')) localStorage.setItem('gg_notifications', JSON.stringify(DEFAULT_NOTIFICATIONS));
+    const isAdmin = typeof window !== 'undefined' && (window.location.hash.includes('admin') || sessionStorage.getItem('gg_admin_token') === 'authorized');
+    
+    if (isAdmin) {
+      // Admin dashboard strictly shows Firebase database content. Clear local seed/demo fallback if present.
+      const services = localStorage.getItem('gg_services');
+      if (!services || services.includes('bridal-makeup') || services.includes('party-makeup')) {
+        localStorage.setItem('gg_services', '[]');
+      }
+      const packages = localStorage.getItem('gg_packages');
+      if (!packages || packages.includes('Basic Makeup') || packages.includes('Party Makeup')) {
+        localStorage.setItem('gg_packages', '[]');
+      }
+      const artists = localStorage.getItem('gg_artists');
+      if (!artists || artists.includes('Riya Sharma') || artists.includes('riya-sharma')) {
+        localStorage.setItem('gg_artists', '[]');
+      }
+      const gallery = localStorage.getItem('gg_gallery');
+      if (!gallery || gallery.includes('Classic Bridal Glow') || gallery.includes('Bridal Glamour')) {
+        localStorage.setItem('gg_gallery', '[]');
+      }
+      const reviews = localStorage.getItem('gg_reviews');
+      if (!reviews || reviews.includes('Deepika') || reviews.includes('Sushmita')) {
+        localStorage.setItem('gg_reviews', '[]');
+      }
+      const offers = localStorage.getItem('gg_offers');
+      if (!offers || offers.includes('BRIDAL1000') || offers.includes('PARTY500')) {
+        localStorage.setItem('gg_offers', '[]');
+      }
+      const appointments = localStorage.getItem('gg_appointments');
+      if (!appointments || appointments.includes('Meghna Chatterjee') || appointments.includes('Pooja Roy')) {
+        localStorage.setItem('gg_appointments', '[]');
+      }
+      const notifications = localStorage.getItem('gg_notifications');
+      if (!notifications || notifications.includes('Pooja Roy')) {
+        localStorage.setItem('gg_notifications', '[]');
+      }
+      if (!localStorage.getItem('gg_settings')) {
+        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
+      }
+    } else {
+      // Customer view fallback
+      if (!localStorage.getItem('gg_services')) localStorage.setItem('gg_services', JSON.stringify(DEFAULT_SERVICES));
+      if (!localStorage.getItem('gg_packages')) localStorage.setItem('gg_packages', JSON.stringify(DEFAULT_PACKAGES));
+      if (!localStorage.getItem('gg_artists')) localStorage.setItem('gg_artists', JSON.stringify(DEFAULT_ARTISTS));
+      if (!localStorage.getItem('gg_gallery')) localStorage.setItem('gg_gallery', JSON.stringify(DEFAULT_GALLERY));
+      if (!localStorage.getItem('gg_reviews')) localStorage.setItem('gg_reviews', JSON.stringify(DEFAULT_REVIEWS));
+      if (!localStorage.getItem('gg_offers')) localStorage.setItem('gg_offers', JSON.stringify(DEFAULT_OFFERS));
+      if (!localStorage.getItem('gg_settings')) localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
+      if (!localStorage.getItem('gg_appointments')) localStorage.setItem('gg_appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
+      if (!localStorage.getItem('gg_notifications')) localStorage.setItem('gg_notifications', JSON.stringify(DEFAULT_NOTIFICATIONS));
+    }
   }
 
   static get<T>(key: string): T {
