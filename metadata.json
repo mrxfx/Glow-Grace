@@ -1,0 +1,6 @@
+{
+  "name": "Glow & Grace",
+  "description": "Professional bridal makeup, party makeup, hairstyling, skincare and beauty services at Glow & Grace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
