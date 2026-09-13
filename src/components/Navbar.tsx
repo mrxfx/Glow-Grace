@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 Glow & Grace
               </span>
               <span className="text-[9px] font-sans tracking-[0.2em] text-[#B85C72] block uppercase">
-                Luxury Beauty Studio
+                Ladies Parlour & Salon
               </span>
             </div>
           </button>

@@ -26,7 +26,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, navigate }) => {
                   Glow & Grace
                 </span>
                 <span className="text-[9px] font-sans tracking-[0.2em] text-[#D4A373] block uppercase">
-                  Luxury Beauty Studio
+                  Ladies Beauty Parlour & Salon
                 </span>
               </div>
             </button>
@@ -79,7 +79,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, navigate }) => {
 
           {/* Column 3: Contact details */}
           <div>
-            <h3 className="font-serif text-lg text-[#D4A373] mb-6 tracking-wide">Our Studio</h3>
+            <h3 className="font-serif text-lg text-[#D4A373] mb-6 tracking-wide">Our Parlour</h3>
             <ul className="space-y-4">
               <li className="flex gap-3 text-sm text-[#FFF9F7]/70 leading-relaxed font-sans">
                 <MapPin className="w-5 h-5 text-[#D4A373] shrink-0 mt-0.5" />
@@ -120,7 +120,7 @@ export const Footer: React.FC<FooterProps> = ({ settings, navigate }) => {
         {/* Divider */}
         <div className="border-t border-[#FFF9F7]/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[#FFF9F7]/50 text-xs font-sans text-center md:text-left">
-            &copy; {currentYear} Glow & Grace Beauty Parlour. All rights reserved.
+            &copy; {currentYear} Glow & Grace Ladies Beauty Parlour & Salon. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <button

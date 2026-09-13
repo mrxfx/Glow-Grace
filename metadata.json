@@ -1,6 +1,6 @@
 {
-  "name": "Glow & Grace",
-  "description": "Professional bridal makeup, party makeup, hairstyling, skincare and beauty services at Glow & Grace.",
+  "name": "Glow & Grace Ladies Beauty Parlour & Salon",
+  "description": "Premium ladies beauty parlour and women's salon offering professional makeup, hair styling, skin polishing, threading, waxing, bridal services, and custom beauty packages in a hygienic and relaxing sanctuary.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

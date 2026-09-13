@@ -1484,7 +1484,7 @@ exports.sendAutomatedReminders = onSchedule({
           <div>
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Category *</label>
             <select value={serviceForm.category} onChange={e => setServiceForm(p => ({ ...p, category: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]">
-              {['Bridal', 'Party', 'Engagement', 'Hair', 'Skincare', 'Nails', 'Salon'].map(c => (
+              {['Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'].map(c => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
@@ -1589,7 +1589,7 @@ exports.sendAutomatedReminders = onSchedule({
           <div>
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Category *</label>
             <select value={galleryForm.category} onChange={e => setGalleryForm(p => ({ ...p, category: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]">
-              {['Bridal', 'Party', 'Engagement', 'Hair', 'Skincare', 'Nails', 'Salon'].map(c => (
+              {['Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'].map(c => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>

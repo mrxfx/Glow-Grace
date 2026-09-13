@@ -49,20 +49,20 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
           <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#F5DDE1] rounded-full text-[11px] font-sans font-bold tracking-[0.2em] uppercase text-[#B85C72]">
               <Sparkles className="w-3.5 h-3.5" />
-              LUXURY BEAUTY STUDIO
+              LADIES BEAUTY PARLOUR & SALON
             </div>
             
             <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#24191B] leading-[1.1] tracking-tight">
-              Enhance Your <br className="hidden sm:inline" />
-              <span className="text-[#B85C72] italic font-normal">Natural Glow.</span>
+              Your Beauty, <br className="hidden sm:inline" />
+              <span className="text-[#B85C72] italic font-normal">Our Passion.</span>
             </h1>
 
             <p className="text-sm font-sans tracking-[0.2em] text-[#D4A373] uppercase font-semibold">
-              Hair &bull; Makeup &bull; Skin &bull; Self Love
+              Makeup &bull; Hair &bull; Skin &bull; Grooming
             </p>
 
             <p className="text-[#24191B]/75 text-base md:text-lg max-w-lg mx-auto lg:mx-0 font-sans leading-relaxed">
-              Step into a world of beauty, care and confidence. At Glow & Grace, we bring out the most beautiful version of you, using luxury products in a serene, hygienic space.
+              Step into a world of elegance, care, and confidence. At Glow & Grace Ladies Beauty Parlour & Salon, we bring out the most premium and radiant version of you, using high-quality professional cosmetics and skin therapies in a pristine, comfortable women-only environment.
             </p>
 
             {/* Buttons */}
@@ -338,7 +338,7 @@ export const AboutView: React.FC<CustomerViewsProps> = ({ navigate }) => {
         <div className="lg:col-span-6 relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-stone-100">
           <img 
             src="https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=800&auto=format&fit=crop&q=80" 
-            alt="Warm elegant Glow & Grace studio lounge interiors" 
+            alt="Warm elegant Glow & Grace ladies parlour interiors" 
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-[#24191B]/10" />
@@ -351,13 +351,13 @@ export const AboutView: React.FC<CustomerViewsProps> = ({ navigate }) => {
               More Than a Salon.
             </span>
             <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#24191B] tracking-tight">
-              It’s Your Self-Love Space.
+              Your Premium Parlour Space.
             </h2>
             <p className="text-sm md:text-base text-[#24191B]/70 leading-relaxed font-sans">
-              Beauty is not just about how you look on the outside. It is fundamentally about how you feel on the inside. Our dedicated lounge exists to create a relaxing, deeply professional, and individualized beauty haven.
+              Beauty is not just about how you look on the outside. It is fundamentally about the confidence and elegance you feel on the inside. Our dedicated parlour space is designed to provide a relaxing, completely private, and customized beauty experience for every woman.
             </p>
             <p className="text-xs text-[#24191B]/60 leading-relaxed font-sans">
-              Whether you are gearing up to walk down the wedding aisle, stepping onto an anniversary dancefloor, or enjoying a slow Sunday facial detox, we cater personalized care using premium organic products and high-precision sterilizations.
+              Whether you are preparing for your royal wedding day, getting dolled up for a family celebration, or enjoying a nourishing facial cleanup, we cater to all your requirements using premium cosmetics and sterilized equipment.
             </p>
           </div>
 
@@ -401,7 +401,7 @@ export const ServicesView: React.FC<CustomerViewsProps> = ({ navigate }) => {
     setServices(MockDB.getServices().filter(s => s.status === 'Active'));
   }, []);
 
-  const categories = ['All', 'Bridal', 'Party', 'Engagement', 'Hair', 'Skincare', 'Nails', 'Salon'];
+  const categories = ['All', 'Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'];
 
   const filteredServices = services.filter(s => {
     if (activeCategory === 'All') return true;
@@ -744,7 +744,7 @@ export const GalleryView: React.FC<CustomerViewsProps> = () => {
     setGallery(MockDB.getGallery());
   }, []);
 
-  const categories = ['All', 'Bridal', 'Party', 'Engagement', 'Hair', 'Skincare', 'Nails', 'Salon'];
+  const categories = ['All', 'Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'];
 
   const filteredGallery = gallery.filter(item => {
     if (activeCategory === 'All') return true;
