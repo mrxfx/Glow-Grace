@@ -53,7 +53,17 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
   const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
 
   // Reusable Form Data holders
-  const [serviceForm, setServiceForm] = useState({ name: '', description: '', startingPrice: 0, category: 'Bridal', duration: 60, status: 'Active' as const, imageUrl: '' });
+  const [serviceForm, setServiceForm] = useState({
+    name: '',
+    description: '',
+    startingPrice: 0,
+    originalPrice: 0,
+    discount: 0,
+    category: 'Bridal Services',
+    duration: 60,
+    status: 'Active' as const,
+    imageUrl: ''
+  });
   const [packageForm, setPackageForm] = useState({ name: '', price: 0, description: '', features: '', isPopular: false, status: 'Active' as const });
   const [artistForm, setArtistForm] = useState({ name: '', role: 'Senior Makeup Artist', experience: '5+ Years', specialty: '', bio: '', photoUrl: '', status: 'Active' as const, rating: 5 });
   const [galleryForm, setGalleryForm] = useState({ title: '', category: 'Bridal', description: '', isFeatured: false, imageUrl: '' });
@@ -826,7 +836,17 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                 variant="accent"
                 onClick={() => {
                   setSelectedFormId(null);
-                  setServiceForm({ name: '', description: '', startingPrice: 999, category: 'Bridal', duration: 60, status: 'Active', imageUrl: '' });
+                  setServiceForm({
+                    name: '',
+                    description: '',
+                    startingPrice: 999,
+                    originalPrice: 0,
+                    discount: 0,
+                    category: 'Bridal Services',
+                    duration: 60,
+                    status: 'Active',
+                    imageUrl: ''
+                  });
                   setActiveFormType('service');
                 }}
                 className="flex items-center gap-2"
@@ -839,7 +859,21 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {services.map(s => (
                 <div key={s.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-sm">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
+                    {/* Service Image preview */}
+                    {s.imageUrl ? (
+                      <div className="w-full h-32 rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                        <img
+                          src={s.imageUrl}
+                          alt={s.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-24 rounded-xl bg-[#FFF0F2] border border-[#F5DDE1] flex items-center justify-center text-xs text-[#B85C72] font-medium">
+                        No image uploaded
+                      </div>
+                    )}
                     <div className="flex justify-between items-start">
                       <span className="text-[10px] text-[#B85C72] uppercase font-bold tracking-widest">{s.category}</span>
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
@@ -850,14 +884,34 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
                     </div>
                     <h4 className="font-serif text-lg font-bold text-stone-800">{s.name}</h4>
                     <p className="text-xs text-stone-500 line-clamp-2">{s.description}</p>
-                    <span className="text-base font-serif font-extrabold text-[#B85C72] block">₹{s.startingPrice}</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-base font-serif font-extrabold text-[#B85C72]">₹{s.startingPrice}</span>
+                      {s.originalPrice && s.originalPrice > s.startingPrice && (
+                        <span className="text-xs text-stone-400 line-through">₹{s.originalPrice}</span>
+                      )}
+                      {s.discount ? (
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                          {s.discount}% OFF
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="flex gap-2 border-t border-stone-100 pt-4 mt-4">
                     <button
                       onClick={() => {
                         setSelectedFormId(s.id);
-                        setServiceForm({ name: s.name, description: s.description, startingPrice: s.startingPrice, category: s.category, duration: s.duration, status: s.status, imageUrl: s.imageUrl });
+                        setServiceForm({
+                          name: s.name,
+                          description: s.description,
+                          startingPrice: s.startingPrice,
+                          originalPrice: s.originalPrice || 0,
+                          discount: s.discount || 0,
+                          category: s.category,
+                          duration: s.duration,
+                          status: s.status,
+                          imageUrl: s.imageUrl || ''
+                        });
                         setActiveFormType('service');
                       }}
                       className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
@@ -1481,30 +1535,47 @@ exports.sendAutomatedReminders = onSchedule({
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Service Name *</label>
             <input type="text" required value={serviceForm.name} onChange={e => setServiceForm(p => ({ ...p, name: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
           </div>
-          <div>
-            <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Category *</label>
-            <select value={serviceForm.category} onChange={e => setServiceForm(p => ({ ...p, category: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]">
-              {['Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'].map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Starting Price (₹) *</label>
+              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Category *</label>
+              <select value={serviceForm.category} onChange={e => setServiceForm(p => ({ ...p, category: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]">
+                {['Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Nails', 'Bridal Services'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Status *</label>
+              <select value={serviceForm.status} onChange={e => setServiceForm(p => ({ ...p, status: e.target.value as 'Active' | 'Inactive' }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Price (₹) *</label>
               <input type="number" required value={serviceForm.startingPrice} onChange={e => setServiceForm(p => ({ ...p, startingPrice: parseInt(e.target.value) || 0 }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
             </div>
             <div>
-              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Duration (mins) *</label>
-              <input type="number" required value={serviceForm.duration} onChange={e => setServiceForm(p => ({ ...p, duration: parseInt(e.target.value) || 0 }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
+              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Orig. Price (₹)</label>
+              <input type="number" value={serviceForm.originalPrice || ''} placeholder="Optional" onChange={e => setServiceForm(p => ({ ...p, originalPrice: parseInt(e.target.value) || 0 }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
             </div>
+            <div>
+              <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Discount (%)</label>
+              <input type="number" value={serviceForm.discount || ''} placeholder="Optional" onChange={e => setServiceForm(p => ({ ...p, discount: parseInt(e.target.value) || 0 }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Duration (mins) *</label>
+            <input type="number" required value={serviceForm.duration} onChange={e => setServiceForm(p => ({ ...p, duration: parseInt(e.target.value) || 0 }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
           </div>
           <div>
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Description *</label>
             <textarea required rows={3} value={serviceForm.description} onChange={e => setServiceForm(p => ({ ...p, description: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
           </div>
           <ImageUploader
-            label="Service Image (Optional)"
+            label="Service Image (URL or Upload)"
             value={serviceForm.imageUrl}
             onChange={val => setServiceForm(p => ({ ...p, imageUrl: val }))}
             placeholder="e.g. https://images.unsplash.com/photo-..."

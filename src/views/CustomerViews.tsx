@@ -82,6 +82,57 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
     });
   };
 
+  // Curated Popular Daily Picks (Bridal Makeup, Party Makeup, Facial, Hair Spa, Manicure, Eyebrow/Threading)
+  // or filtered services when a category is selected
+  const displayedServices = React.useMemo(() => {
+    if (selectedCategory === 'All') {
+      const preferredSlugs = [
+        'bridal-makeup',
+        'party-makeup',
+        'premium-facial',
+        'hair-spa',
+        'nourishing-manicure',
+        'eyebrow-threading'
+      ];
+      const picks = preferredSlugs
+        .map(key => services.find(s => s.slug === key || s.id === key))
+        .filter((s): s is Service => Boolean(s));
+
+      if (picks.length >= 4) {
+        return picks.slice(0, 6);
+      }
+      return services.slice(0, 6);
+    }
+
+    const cat = selectedCategory.toLowerCase();
+    const filtered = services.filter((s) => {
+      const sc = (s.category || '').toLowerCase();
+      const sn = (s.name || '').toLowerCase();
+      if (cat === 'makeup') return sc.includes('makeup') || sn.includes('makeup');
+      if (cat === 'hair') return sc.includes('hair') || sn.includes('hair') || sn.includes('cut') || sn.includes('spa');
+      if (cat === 'facial') return sc.includes('facial') || sc.includes('skin') || sn.includes('facial') || sn.includes('cleanup') || sn.includes('bleach') || sn.includes('polishing');
+      if (cat === 'grooming') return (sc.includes('grooming') && !sn.includes('manicure') && !sn.includes('pedicure') && !sn.includes('nail')) || sn.includes('threading') || sn.includes('waxing') || sn.includes('lip') || sn.includes('eyebrow');
+      if (cat === 'nails') return sc.includes('nail') || sn.includes('nail') || sn.includes('manicure') || sn.includes('pedicure');
+      if (cat === 'bridal') return sc.includes('bridal') || sn.includes('bridal') || sn.includes('saree') || sn.includes('chandan');
+      return sc.includes(cat);
+    });
+
+    return (filtered.length > 0 ? filtered : services).slice(0, 6);
+  }, [services, selectedCategory]);
+
+  const getServiceImageUrl = (s: Service) => {
+    if (s.imageUrl && s.imageUrl.trim() !== '') {
+      return s.imageUrl;
+    }
+    const cat = (s.category || '').toLowerCase();
+    if (cat.includes('bridal')) return 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80';
+    if (cat.includes('hair')) return 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&auto=format&fit=crop&q=80';
+    if (cat.includes('skin') || cat.includes('facial')) return 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=800&auto=format&fit=crop&q=80';
+    if (cat.includes('nail')) return 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&auto=format&fit=crop&q=80';
+    if (cat.includes('grooming')) return 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&auto=format&fit=crop&q=80';
+    return 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+  };
+
   const portfolioCategories = ['All', 'Bridal', 'Makeup', 'Hair', 'Facial', 'Nails', 'Reels'];
 
   const filteredPortfolio = gallery.filter(item => {
@@ -248,38 +299,95 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
             What Do You Need Today? ✨
           </h2>
           <p className="text-xs sm:text-sm text-[#3B0F19]/70 font-sans">
-            Tap a category to quickly discover services & starting prices.
+            Tap a category or discover our handpicked daily salon favourites.
           </p>
         </div>
 
-        {/* 6 Category Chips / Compact Grid */}
+        {/* 1. SERVICE CATEGORY CARDS (Compact with beauty thumbnail & icon) */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3">
           {[
-            { id: 'Makeup', name: 'Makeup', emoji: '💄', desc: 'Party & HD glam' },
-            { id: 'Hair', name: 'Hair', emoji: '💇‍♀️', desc: 'Spa & styling' },
-            { id: 'Facial', name: 'Facial', emoji: '🌸', desc: 'Gold glow polish' },
-            { id: 'Grooming', name: 'Grooming', emoji: '✨', desc: 'Threading & wax' },
-            { id: 'Nails', name: 'Nails', emoji: '💅', desc: 'Gel extensions' },
-            { id: 'Bridal', name: 'Bridal', emoji: '👰', desc: 'Mukut & packages' },
+            {
+              id: 'Makeup',
+              name: 'Makeup',
+              emoji: '💄',
+              desc: 'Party & HD glam',
+              img: 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=160&auto=format&fit=crop&q=80',
+              alt: 'Makeup artistry service at Glow & Grace'
+            },
+            {
+              id: 'Hair',
+              name: 'Hair',
+              emoji: '💇‍♀️',
+              desc: 'Spa & styling',
+              img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=160&auto=format&fit=crop&q=80',
+              alt: 'Hair styling and spa at Glow & Grace'
+            },
+            {
+              id: 'Facial',
+              name: 'Facial',
+              emoji: '🌸',
+              desc: 'Gold glow polish',
+              img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=160&auto=format&fit=crop&q=80',
+              alt: 'Skin & facial treatments at Glow & Grace'
+            },
+            {
+              id: 'Grooming',
+              name: 'Grooming',
+              emoji: '✨',
+              desc: 'Threading & wax',
+              img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=160&auto=format&fit=crop&q=80',
+              alt: 'Threading & waxing grooming at Glow & Grace'
+            },
+            {
+              id: 'Nails',
+              name: 'Nails',
+              emoji: '💅',
+              desc: 'Gel extensions',
+              img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=160&auto=format&fit=crop&q=80',
+              alt: 'Manicure & nail styling at Glow & Grace'
+            },
+            {
+              id: 'Bridal',
+              name: 'Bridal',
+              emoji: '👰',
+              desc: 'Mukut & packages',
+              img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=160&auto=format&fit=crop&q=80',
+              alt: 'Indian bridal makeover and styling at Glow & Grace'
+            },
           ].map((cat) => {
             const isSelected = selectedCategory.toLowerCase() === cat.id.toLowerCase();
             return (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer text-center group ${
+                onClick={() => setSelectedCategory(prev => prev.toLowerCase() === cat.id.toLowerCase() ? 'All' : cat.id)}
+                className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border transition-all cursor-pointer text-center group relative overflow-hidden ${
                   isSelected
-                    ? 'bg-[#3B0F19] text-white border-[#3B0F19] shadow-md -translate-y-0.5'
-                    : 'bg-white text-[#3B0F19] border-[#F5DDE1] hover:border-[#B85C72] hover:bg-[#FFF0F2]/50 shadow-xs'
+                    ? 'bg-[#3B0F19] text-white border-[#3B0F19] shadow-md -translate-y-0.5 ring-2 ring-[#B85C72]/40'
+                    : 'bg-white text-[#3B0F19] border-[#F5DDE1] hover:border-[#B85C72] hover:bg-[#FFF0F2]/40 shadow-xs'
                 }`}
+                aria-pressed={isSelected}
               >
-                <span className="text-2xl sm:text-3xl mb-1.5 transition-transform group-hover:scale-110">
-                  {cat.emoji}
-                </span>
-                <span className="font-serif text-xs sm:text-sm font-bold block">
+                {/* Small Category Beauty Thumbnail with Emoji Badge */}
+                <div className="relative mb-1">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border border-white shadow-xs bg-[#FFF0F2]">
+                    <img
+                      src={cat.img}
+                      alt={cat.alt}
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <span className="absolute -bottom-1 -right-1 text-[11px] sm:text-xs bg-white/95 rounded-full px-0.5 shadow-xs border border-[#F5DDE1]">
+                    {cat.emoji}
+                  </span>
+                </div>
+
+                <span className="font-serif text-[11px] sm:text-xs font-bold block leading-tight">
                   {cat.name}
                 </span>
-                <span className={`text-[10px] hidden sm:block mt-0.5 ${isSelected ? 'text-[#E5C494]' : 'text-stone-400'}`}>
+                <span className={`text-[9px] hidden sm:block mt-0.5 leading-tight ${isSelected ? 'text-[#E5C494]' : 'text-stone-400'}`}>
                   {cat.desc}
                 </span>
               </button>
@@ -287,49 +395,111 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
           })}
         </div>
 
-        {/* Instant Category Services Row / Grid */}
-        <div className="bg-[#FAF6F0]/60 border border-[#F5DDE1] rounded-2xl p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-3 border-b border-[#F5DDE1]/60 pb-2.5">
-            <span className="text-xs font-serif font-bold text-[#3B0F19]">
-              {selectedCategory === 'All' ? 'Popular Daily Picks' : `${selectedCategory} Highlights`}
-            </span>
+        {/* 2. POPULAR DAILY PICKS: IMAGE-FIRST BEAUTY PARLOUR SERVICE CARDS */}
+        <div className="bg-[#FAF6F0]/60 border border-[#F5DDE1] rounded-3xl p-3.5 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F5DDE1]/70 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-serif text-sm sm:text-base md:text-lg font-bold text-[#3B0F19]">
+                  {selectedCategory === 'All' ? 'Popular Daily Picks' : `${selectedCategory} Highlights`}
+                </h3>
+                {selectedCategory !== 'All' && (
+                  <button
+                    onClick={() => setSelectedCategory('All')}
+                    className="text-[10px] text-[#B85C72] hover:underline font-bold bg-[#FFF0F2] px-2 py-0.5 rounded-full border border-[#F5DDE1] cursor-pointer"
+                  >
+                    Show All Picks ✕
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] sm:text-xs text-stone-500 font-sans">
+                {selectedCategory === 'All' 
+                  ? 'Our most requested everyday parlour services & bridal favourites' 
+                  : `Hand-crafted beauty treatments for ${selectedCategory}`}
+              </p>
+            </div>
+
             <button
               onClick={() => navigate('services')}
-              className="text-xs font-bold text-[#B85C72] hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-xs sm:text-sm font-bold text-[#B85C72] hover:text-[#802339] flex items-center gap-1 cursor-pointer self-start sm:self-auto group transition-colors"
             >
-              <span>View All 20+ Services</span>
-              <ArrowRight className="w-3 h-3" />
+              <span>View All 20+ Services →</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {services
-              .filter((s) => {
-                if (selectedCategory === 'All') return true;
-                return s.category.toLowerCase().includes(selectedCategory.toLowerCase());
-              })
-              .slice(0, 6)
-              .map((s) => (
+          {/* 2-Column Grid on Mobile (320px-430px), 3-Column on Tablet/Desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
+            {displayedServices.map((s) => {
+              const serviceImg = getServiceImageUrl(s);
+              const priceNum = s.startingPrice || (s as any).price || 0;
+
+              return (
                 <div
                   key={s.id}
-                  className="bg-white border border-[#F5DDE1] rounded-xl p-3 flex items-center justify-between shadow-xs hover:border-[#B85C72] transition-colors"
+                  className="bg-white border border-[#F5DDE1] rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:border-[#B85C72]/50 transition-all duration-300 flex flex-col group justify-between"
                 >
-                  <div className="space-y-0.5 pr-2">
-                    <h4 className="font-serif text-xs font-bold text-[#3B0F19] line-clamp-1">
-                      {s.name}
-                    </h4>
-                    <span className="text-[10px] text-stone-500 font-sans block">
-                      Starting from <strong className="text-[#B85C72] font-serif text-xs font-extrabold">₹{s.price}</strong>
-                    </span>
+                  {/* BEAUTY SERVICE IMAGE */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#FFF0F2]">
+                    <img
+                      src={serviceImg}
+                      alt={`${s.name} service at Glow & Grace Ladies Beauty Parlour`}
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                    />
+                    {/* Duration / Tag badge */}
+                    <div className="absolute top-2 left-2">
+                      <span className="px-2 py-0.5 bg-white/90 backdrop-blur-xs text-[#802339] text-[9px] font-sans font-bold tracking-wide rounded-md shadow-xs border border-white/60">
+                        {s.duration ? `${s.duration} mins` : s.category}
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleBookService(s.id)}
-                    className="px-3.5 py-1.5 bg-[#B85C72] hover:bg-[#802339] text-white rounded-lg text-xs font-bold font-sans transition-all shrink-0 cursor-pointer shadow-xs"
-                  >
-                    Book
-                  </button>
+
+                  {/* SERVICE CONTENT DETAILS */}
+                  <div className="p-2.5 sm:p-3.5 flex flex-col flex-1 justify-between gap-2">
+                    <div>
+                      <h4 className="font-serif text-xs sm:text-sm font-bold text-[#3B0F19] group-hover:text-[#B85C72] transition-colors line-clamp-1">
+                        {s.name}
+                      </h4>
+                      <p className="text-[10px] sm:text-xs text-[#3B0F19]/70 font-sans line-clamp-1 leading-snug mt-0.5">
+                        {s.description}
+                      </p>
+                    </div>
+
+                    {/* PRICE & BOOK ACTION */}
+                    <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-[#F5DDE1]/60 mt-auto">
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9px] text-stone-500 font-sans block leading-none truncate">
+                          Starting from
+                        </span>
+                        <span className="font-serif text-xs sm:text-sm font-extrabold text-[#B85C72] block leading-tight mt-0.5">
+                          ₹{priceNum.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => handleBookService(s.id)}
+                        aria-label={`Book ${s.name} appointment`}
+                        className="px-3 py-1.5 sm:px-3.5 sm:py-1.5 bg-[#B85C72] hover:bg-[#802339] active:scale-95 text-white rounded-lg text-xs font-bold font-sans transition-all shrink-0 cursor-pointer shadow-xs min-h-[44px] sm:min-h-[36px] flex items-center justify-center"
+                      >
+                        Book
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ))}
+              );
+            })}
+          </div>
+
+          {/* Bottom link to view full services */}
+          <div className="text-center pt-2">
+            <button
+              onClick={() => navigate('services')}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white hover:bg-[#FFF0F2] text-[#B85C72] hover:text-[#802339] border border-[#F5DDE1] rounded-full text-xs font-bold font-sans transition-all shadow-xs hover:shadow-sm cursor-pointer"
+            >
+              <span>View All 20+ Services →</span>
+            </button>
           </div>
         </div>
       </section>

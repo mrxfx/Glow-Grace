@@ -4,6 +4,9 @@ export interface Service {
   name: string;
   description: string;
   startingPrice: number;
+  originalPrice?: number;
+  discount?: number;
+  price?: number;
   category: string;
   imageUrl: string;
   duration: number; // in minutes
