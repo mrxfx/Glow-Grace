@@ -1,12 +1,10 @@
 {
-  "projectId": "gen-lang-client-0492706915",
-  "appId": "1:602543422602:web:941d0fe6ec180ce76a0173",
-  "apiKey": "AIzaSyAeRUXW8pIxqhQQ0cZmTFnfmrZceuC8KdA",
-  "authDomain": "gen-lang-client-0492706915.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-glowgrace-96f9c040-3d3c-4138-8d53-f2534fcc83ec",
-  "storageBucket": "gen-lang-client-0492706915.firebasestorage.app",
-  "messagingSenderId": "602543422602",
-  "measurementId": "",
-  "oAuthClientId": "602543422602-odr76uukgqc5gt07djcfrmsmi2hufq4u.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "glowgracev0",
+  "appId": "1:931378137198:web:aed741fa53ea994fab7e7f",
+  "apiKey": "AIzaSyBXzqXqVb6nuCkUHsAXkQkua_38J8IDxeY",
+  "authDomain": "glowgracev0.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "glowgracev0.firebasestorage.app",
+  "messagingSenderId": "931378137198",
+  "measurementId": "G-DS8RJDPFM8"
 }
