@@ -9,9 +9,12 @@ import { MockDB } from '../data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, WebsiteSettings, Appointment } from '../types';
 import { Button, LoadingState, EmptyState, Toast } from '../components/Common';
 import { ServiceCard, PackageCard, ArtistCard, ReviewCard } from '../components/Cards';
-import { Lightbox, Modal } from '../components/Modal';
+import { Lightbox, Modal, ReelModal } from '../components/Modal';
 import { BookingForm, BookingConfirmation } from '../components/BookingForm';
 import { ContactSection } from '../components/ContactSection';
+import { BeforeAfterSlider } from '../components/BeforeAfterSlider';
+import { BridalShowcase } from '../components/BridalShowcase';
+import { ReelGallery } from '../components/ReelGallery';
 
 interface CustomerViewsProps {
   path: string;
@@ -21,30 +24,56 @@ interface CustomerViewsProps {
 }
 
 // ==========================================
-// 1. HOME VIEW
+// 1. HOME VIEW (AUTHENTIC PARLOUR & MUA PROFILE)
 // ==========================================
 export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [activePortfolioCategory, setActivePortfolioCategory] = useState<string>('All');
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeReel, setActiveReel] = useState<GalleryItem | null>(null);
+  const [likesMap, setLikesMap] = useState<Record<string, { count: number; liked: boolean }>>({});
 
   useEffect(() => {
     setServices(MockDB.getServices().filter(s => s.status === 'Active'));
     setPackages(MockDB.getPackages().filter(p => p.status === 'Active').slice(0, 3));
     setReviews(MockDB.getReviews().filter(r => r.status === 'Approved').slice(0, 3));
     setOffers(MockDB.getOffers().filter(o => o.status === 'Active'));
+    const gal = MockDB.getGallery();
+    setGallery(gal);
+
+    // Initialize likes
+    const initialLikes: Record<string, { count: number; liked: boolean }> = {};
+    gal.forEach(item => {
+      initialLikes[item.id] = { count: item.likes || Math.floor(Math.random() * 200 + 150), liked: false };
+    });
+    setLikesMap(initialLikes);
   }, []);
 
-  // Standard requested Indian Parlour categories with high-quality representation images
-  const parlourCategories = [
-    { name: 'Makeup', emoji: '💄', img: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&auto=format&fit=crop&q=80', desc: 'HD & Airbrush Party, Bridal and Festive Glow', price: '1,999' },
-    { name: 'Hair', emoji: '💇‍♀️', img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&auto=format&fit=crop&q=80', desc: 'Hair Spa, Keratin, Smoothening & Custom Styling', price: '799' },
-    { name: 'Skin & Facial', emoji: '🌸', img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&auto=format&fit=crop&q=80', desc: 'Gold, Pearl & Herbal Therapies for Radiant Skin', price: '699' },
-    { name: 'Grooming', emoji: '✨', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=80', desc: 'Precise Threading, Charcoal Waxing & De-Tan', price: '50' },
-    { name: 'Nails', emoji: '💅', img: 'https://images.unsplash.com/photo-1604654894610-df4906b197ae?w=600&auto=format&fit=crop&q=80', desc: 'Luxury Gel Extensions, Chrome Paint & Custom Art', price: '499' },
-    { name: 'Bridal Services', emoji: '👰', img: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format&fit=crop&q=80', desc: 'Royal Bridal Transformations & Saree Draping', price: '7,999' }
-  ];
+  const handleToggleLike = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    setLikesMap(prev => {
+      const current = prev[itemId] || { count: 100, liked: false };
+      return {
+        ...prev,
+        [itemId]: {
+          count: current.liked ? current.count - 1 : current.count + 1,
+          liked: !current.liked
+        }
+      };
+    });
+  };
+
+  const portfolioCategories = ['All', 'Bridal', 'Makeup', 'Hair', 'Facial', 'Nails', 'Reels'];
+
+  const filteredPortfolio = gallery.filter(item => {
+    if (activePortfolioCategory === 'All') return true;
+    if (activePortfolioCategory === 'Reels') return item.mediaType === 'video';
+    return item.category.toLowerCase().includes(activePortfolioCategory.toLowerCase());
+  });
 
   // Instagram-worthy visual feed posts
   const instagramFeed = [
@@ -61,103 +90,267 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
   return (
     <div className="space-y-24 pb-20 bg-[#FFFDFB]">
       
-      {/* 1A. HERO SECTION */}
-      <section id="hero-banner" className="relative bg-gradient-to-b from-[#FFF0F2] to-[#FFFDFB] pt-32 pb-24 overflow-hidden border-b border-[#F5DDE1]/40">
-        {/* Artistic background designs */}
-        <div className="absolute top-1/4 -right-16 w-96 h-96 bg-[#FAD2E1]/40 rounded-full blur-3xl opacity-60 -z-10" />
-        <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#E5C494]/10 rounded-full blur-3xl opacity-40 -z-10" />
-        
-        {/* Subtle curved pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#B85C72_1px,transparent_1px)] [background-size:16px_16px]" />
+      {/* Lightbox for photo modal */}
+      <Lightbox
+        images={filteredPortfolio}
+        currentIndex={lightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+        onNavigate={(idx) => setLightboxIndex(idx)}
+        onBook={(lookName) => navigate('booking')}
+      />
 
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Hero Left Content */}
-          <div className="lg:col-span-6 space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFF0F2] border border-[#F5DDE1] rounded-full text-[11px] font-sans font-extrabold tracking-[0.2em] uppercase text-[#B85C72] shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse text-[#D4AF37]" />
-              LADIES BEAUTY PARLOUR
+      {/* Reel Modal for video modal */}
+      <ReelModal
+        reel={activeReel}
+        isOpen={activeReel !== null}
+        onClose={() => setActiveReel(null)}
+        onBook={(lookName) => navigate('booking')}
+      />
+
+      {/* 1A. PROFILE-STYLE ARTIST & PARLOUR HERO */}
+      <section id="parlour-profile" className="relative bg-gradient-to-b from-[#FFF0F2] via-[#FAF6F0] to-[#FFFDFB] pt-32 pb-16 px-6 border-b border-[#F5DDE1]/60">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Profile Header Block (Avatar + Info + Verification) */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
+            {/* Circular Artist / Parlour Avatar with Gold Ring & Verified Checkmark */}
+            <div className="relative shrink-0">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#D4AF37] via-[#B85C72] to-[#E5C494] shadow-xl">
+                <div className="w-full h-full rounded-full overflow-hidden border-2 border-white bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format&fit=crop&q=80"
+                    alt="Glow & Grace Ladies Beauty Parlour & Makeup Artist"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </div>
+              {/* Verified Badge */}
+              <div 
+                className="absolute -bottom-1 -right-1 bg-[#059669] text-white p-1.5 rounded-full shadow-md border-2 border-white flex items-center justify-center"
+                title="Verified Ladies Beauty Parlour & Makeup Artist"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
             </div>
-            
-            <div className="space-y-4">
-              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-extrabold text-[#3B0F19] leading-[1.15] tracking-tight">
-                Look Beautiful. <br />
-                <span className="text-[#B85C72] italic font-serif font-normal">Feel Confident.</span>
+
+            {/* Profile Identity Details */}
+            <div className="space-y-3 flex-1">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <span className="px-3 py-1 bg-[#B85C72]/10 border border-[#B85C72]/20 text-[#B85C72] text-[10px] uppercase font-bold tracking-widest rounded-full font-sans">
+                  Verified Ladies Salon
+                </span>
+                <span className="px-2.5 py-1 bg-[#D4AF37]/15 text-[#802339] text-[10px] font-bold tracking-wider rounded-full font-sans flex items-center gap-1">
+                  👑 100% Women-Only Sanctuary
+                </span>
+              </div>
+
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#3B0F19] tracking-tight">
+                Glow & Grace
+                <span className="block text-xl sm:text-2xl font-serif text-[#B85C72] font-semibold mt-1">
+                  Ladies Beauty Parlour & Makeup Artist
+                </span>
               </h1>
-              <p className="text-[#3B0F19]/80 text-base md:text-lg max-w-xl mx-auto lg:mx-0 font-sans leading-relaxed">
-                “Professional Makeup, Hair, Skin & Beauty Services for Every Special Moment.”
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-[#3B0F19]/70 font-sans">
+                <span className="font-semibold text-[#802339]">Makeup Artist • Hair • Skin • Bridal</span>
+                <span>&bull;</span>
+                <span className="flex items-center gap-1 text-amber-500 font-bold">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  4.9 (120+ Google Reviews)
+                </span>
+              </div>
+
+              {/* Bio snippet */}
+              <p className="text-xs sm:text-sm text-[#3B0F19]/80 font-sans leading-relaxed max-w-xl">
+                Professional bridal makeup, hairstyling, and traditional parlour care crafted for every celebration and glowing moment. Specializing in Bengali Chandan art, royal North & South Indian bridal transformations, and authentic skin therapies.
               </p>
             </div>
+          </div>
 
-            {/* Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-              <Button 
-                variant="primary" 
-                size="lg" 
-                onClick={() => navigate('booking')}
-                className="bg-[#B85C72] hover:bg-[#802339] border-none shadow-md hover:shadow-lg text-white font-semibold transition-all duration-300"
-              >
-                Book Appointment
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                onClick={() => navigate('services')}
-                className="border-[#B85C72] text-[#B85C72] hover:bg-[#FFF0F2] font-semibold transition-all duration-300"
-              >
-                Explore Services
-              </Button>
+          {/* Key Stats Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-y border-[#F5DDE1]/70 py-4 bg-white/60 backdrop-blur-xs rounded-2xl px-4 border">
+            <div className="text-center sm:text-left">
+              <span className="block font-serif text-xl sm:text-2xl font-black text-[#B85C72]">500+</span>
+              <span className="text-[11px] font-sans text-[#3B0F19]/70 font-semibold">Happy Brides & Clients</span>
             </div>
-
-            {/* Trust badge */}
-            <div className="pt-4 flex items-center justify-center lg:justify-start gap-3">
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#FFF0F2] text-[#B85C72] border border-[#FAD2E1] font-bold font-serif shadow-xs">
-                ✨
-              </div>
-              <div>
-                <span className="text-sm font-extrabold text-[#3B0F19] block tracking-wide">500+ Happy Clients</span>
-                <span className="text-[11px] text-[#3B0F19]/60 block font-sans">Bridal Transformations & Social Glam</span>
-              </div>
+            <div className="text-center sm:text-left">
+              <span className="block font-serif text-xl sm:text-2xl font-black text-[#3B0F19]">5+ Years</span>
+              <span className="text-[11px] font-sans text-[#3B0F19]/70 font-semibold">Artistry Experience</span>
+            </div>
+            <div className="text-center sm:text-left">
+              <span className="block font-serif text-xl sm:text-2xl font-black text-[#B85C72]">1000+</span>
+              <span className="text-[11px] font-sans text-[#3B0F19]/70 font-semibold">Transformations</span>
+            </div>
+            <div className="text-center sm:text-left">
+              <span className="block font-serif text-xl sm:text-2xl font-black text-[#059669]">100%</span>
+              <span className="text-[11px] font-sans text-[#3B0F19]/70 font-semibold">Women Safe & Private</span>
             </div>
           </div>
 
-          {/* Hero Right Media */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              {/* Gold luxury thin frame border */}
-              <div className="absolute -inset-4 border border-[#D4AF37]/40 rounded-[44px] pointer-events-none translate-x-3 translate-y-3 hidden sm:block" />
-
-              {/* Main Bridal/Beauty Portrait */}
-              <div className="aspect-[4/5] rounded-[40px] overflow-hidden shadow-2xl border-4 border-white relative z-10 bg-rose-50">
-                <img 
-                  src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80" 
-                  alt="Beautiful traditional Indian bridal makeup artwork by Glow & Grace parlour"
-                  className="w-full h-full object-cover object-center scale-102"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#3B0F19]/30 to-transparent pointer-events-none" />
-              </div>
-
-              {/* FLOATING BADGES FOR WARM PARLOUR VIBE */}
-              <div className="absolute -top-4 -left-6 z-20 bg-white/95 backdrop-blur-md shadow-xl px-4 py-2.5 rounded-2xl flex items-center gap-2.5 border border-[#F5DDE1]">
-                <span className="text-xl">👩‍🎨</span>
-                <div>
-                  <span className="text-xs font-bold text-[#3B0F19] block">Certified Artists</span>
-                  <span className="text-[9px] text-[#3B0F19]/50 block font-sans">L\'Oreal & MAC Experts</span>
-                </div>
-              </div>
-
-              <div className="absolute bottom-12 -right-8 z-20 bg-[#3B0F19] text-[#FFFDF9] shadow-xl px-4 py-2.5 rounded-2xl flex items-center gap-2.5 border border-[#D4AF37]/30">
-                <span className="text-lg">👑</span>
-                <div>
-                  <span className="text-xs font-bold block">100% Women Safe</span>
-                  <span className="text-[9px] text-white/60 block font-sans">Pristine & Private Parlour</span>
-                </div>
-              </div>
-            </div>
+          {/* Quick Action Profile Buttons */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
+            <button
+              onClick={() => navigate('booking')}
+              className="px-6 py-3 bg-[#B85C72] hover:bg-[#802339] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:shadow-lg flex items-center gap-2 cursor-pointer"
+            >
+              <Calendar className="w-4 h-4 text-[#D4AF37]" />
+              Book Appointment
+            </button>
+            <a
+              href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}?text=Hi%20Glow%20and%20Grace!%20I\'d%20like%20to%20inquire%20about%20booking%20a%20beauty%20appointment.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs font-bold tracking-wider transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            >
+              <span>💬</span>
+              WhatsApp Us
+            </a>
+            <a
+              href={settings.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 bg-white hover:bg-[#FFF0F2] text-[#3B0F19] border border-[#F5DDE1] rounded-xl text-xs font-bold tracking-wider transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Instagram className="w-4 h-4 text-[#B85C72]" />
+              @glowandgrace
+            </a>
           </div>
+
         </div>
       </section>
 
-      {/* 1B. LIMITED TIME OFFERS */}
+      {/* 1B. PORTFOLIO-FIRST: OUR WORK ✨ (IMMEDIATELY AFTER PROFILE!) */}
+      <section id="portfolio-first" className="max-w-7xl mx-auto px-6 space-y-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#F5DDE1] pb-6">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans">
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              PHOTO-FIRST REAL WORK
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#3B0F19]">
+              Our Work ✨
+            </h2>
+            <p className="text-xs sm:text-sm text-[#3B0F19]/70 font-sans">
+              Explore authentic bridal makeovers, party glam, hair designs, and salon transformations.
+            </p>
+          </div>
+
+          {/* Category Tabs Filter */}
+          <div className="flex flex-wrap gap-1.5">
+            {portfolioCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActivePortfolioCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-bold tracking-wider transition-all duration-300 cursor-pointer ${
+                  activePortfolioCategory === cat
+                    ? 'bg-[#3B0F19] text-[#FFFDF9] shadow-sm'
+                    : 'bg-[#FFF0F2] text-[#3B0F19]/70 border border-[#F5DDE1] hover:text-[#B85C72]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Portfolio Masonry / Photo Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {filteredPortfolio.slice(0, 12).map((item, index) => {
+            const isVideo = item.mediaType === 'video';
+            const likeInfo = likesMap[item.id] || { count: item.likes || 150, liked: false };
+
+            return (
+              <div
+                key={item.id}
+                onClick={() => {
+                  if (isVideo) {
+                    setActiveReel(item);
+                  } else {
+                    setLightboxIndex(index);
+                  }
+                }}
+                className="group relative rounded-2xl overflow-hidden bg-stone-100 border border-[#F5DDE1] shadow-xs hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col justify-end aspect-square"
+              >
+                {/* Photo / Thumbnail */}
+                <img
+                  src={item.imageUrl}
+                  alt={item.alt || item.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+
+                {/* Dark Vignette Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
+
+                {/* Top Badges */}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+                  <span className="bg-black/50 backdrop-blur-md text-white text-[9px] font-sans font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border border-white/20">
+                    {item.category}
+                  </span>
+
+                  {isVideo ? (
+                    <span className="bg-[#B85C72] text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                      ▶ Reel
+                    </span>
+                  ) : (
+                    <button
+                      onClick={(e) => handleToggleLike(e, item.id)}
+                      className={`p-1.5 rounded-full backdrop-blur-md transition-transform active:scale-125 ${
+                        likeInfo.liked ? 'bg-rose-600 text-white' : 'bg-black/40 text-white hover:bg-black/60'
+                      }`}
+                      title="Like this look"
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${likeInfo.liked ? 'fill-white' : ''}`} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Bottom Details Bar */}
+                <div className="relative z-10 p-3.5 space-y-1 text-white">
+                  <h4 className="font-serif font-bold text-xs sm:text-sm leading-tight line-clamp-1 group-hover:text-[#E5C494] transition-colors">
+                    {item.title}
+                  </h4>
+                  <div className="flex items-center justify-between text-[10px] text-white/80 font-sans">
+                    <span className="line-clamp-1">{item.description}</span>
+                    <span className="shrink-0 ml-2 font-semibold text-rose-300">
+                      ❤️ {likeInfo.count}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* View Full Gallery Link */}
+        <div className="text-center pt-2">
+          <button
+            onClick={() => navigate('gallery')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white hover:bg-[#FFF0F2] text-[#B85C72] border border-[#F5DDE1] rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-xs hover:shadow-md cursor-pointer"
+          >
+            View Full Portfolio & All 20+ Looks &rarr;
+          </button>
+        </div>
+      </section>
+
+      {/* 1C. BRIDAL LOOKS 👰 (SHOWCASE) */}
+      <BridalShowcase 
+        onBook={(lookName) => navigate('booking')} 
+        onViewAll={() => navigate('services')}
+      />
+
+      {/* 1D. THE GLOW-UP: BEFORE & AFTER ✨ */}
+      <BeforeAfterSlider onBook={(serviceName) => navigate('booking')} />
+
+      {/* 1E. BEAUTY REELS 🎬 (VERTICAL 9:16 CARDS) */}
+      <ReelGallery 
+        reels={gallery.filter(g => g.mediaType === 'video')} 
+        onBook={(lookName) => navigate('booking')}
+      />
+
+      {/* 1F. LIMITED TIME OFFERS */}
       {offers.length > 0 && (
         <section id="promo-banner" className="max-w-7xl mx-auto px-6">
           <div className="bg-gradient-to-r from-[#3B0F19] via-[#4A121A] to-[#3B0F19] rounded-3xl p-8 md:p-10 text-[#FFFDF9] relative overflow-hidden border-b-4 border-[#D4AF37] shadow-xl">
@@ -189,133 +382,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         </section>
       )}
 
-      {/* 1C. SERVICES DESIGN (IMAGE-DRIVEN CATEGORIES) */}
-      <section id="featured-services" className="max-w-7xl mx-auto px-6 space-y-12">
-        <div className="text-center max-w-xl mx-auto space-y-3">
-          <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans block">
-            Our Beauty Menu
-          </span>
-          <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-[#3B0F19]">
-            Exquisite Services for You
-          </h2>
-          <div className="w-16 h-0.5 bg-[#B85C72] mx-auto opacity-40 rounded-full" />
-          <p className="text-sm text-[#3B0F19]/70 font-sans">
-            Hand-picked beauty treatments customized specifically for Indian skin types, hair textures, and traditional events.
-          </p>
-        </div>
-
-        {/* 6 Elegant Parlour Categories - Mobile horizontal swipeable, Desktop 3-column grid */}
-        <div className="flex overflow-x-auto pb-4 md:pb-0 gap-6 scrollbar-none snap-x snap-mandatory md:grid md:grid-cols-3">
-          {parlourCategories.map((cat, idx) => (
-            <div 
-              key={idx}
-              className="bg-white border border-[#F5DDE1] rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 flex flex-col h-full shrink-0 w-72 md:w-auto snap-center group"
-            >
-              <div className="h-48 overflow-hidden relative">
-                <img 
-                  src={cat.img} 
-                  alt={cat.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-[#3B0F19]/20" />
-                <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-[#3B0F19] text-xs font-sans font-extrabold tracking-wider uppercase px-3 py-1 rounded-full border border-[#F5DDE1]">
-                  {cat.emoji} {cat.name}
-                </span>
-                <span className="absolute bottom-4 right-4 bg-[#3B0F19]/90 text-white text-[11px] font-sans font-bold px-3 py-1 rounded-full border border-white/10">
-                  Starts from ₹{cat.price}
-                </span>
-              </div>
-              <div className="p-6 space-y-4 flex flex-col flex-grow">
-                <h3 className="font-serif text-lg font-bold text-[#3B0F19]">{cat.name}</h3>
-                <p className="text-xs text-[#3B0F19]/70 font-sans leading-relaxed flex-grow">{cat.desc}</p>
-                <div className="pt-2 flex gap-2">
-                  <button 
-                    onClick={() => navigate('services')}
-                    className="flex-1 py-2 text-center text-xs font-extrabold text-[#B85C72] hover:text-[#802339] border border-[#F5DDE1] hover:border-[#B85C72] bg-[#FFF0F2]/20 hover:bg-[#FFF0F2]/60 rounded-xl transition-all duration-300 cursor-pointer"
-                  >
-                    View Menu
-                  </button>
-                  <button 
-                    onClick={() => navigate('booking')}
-                    className="flex-1 py-2 text-center text-xs font-extrabold text-white bg-[#B85C72] hover:bg-[#802339] rounded-xl transition-all duration-300 cursor-pointer shadow-xs"
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 1D. BRIDAL SECTION */}
-      <section id="bridal-special" className="relative bg-[#3B0F19] text-[#FFFDF9] py-24 overflow-hidden border-y border-[#D4AF37]/30">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-[#B85C72]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#E5C494]/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Large beautiful Indian bride Portrait */}
-          <div className="lg:col-span-6 relative">
-            <div className="absolute -inset-3 border-2 border-[#D4AF37]/30 rounded-3xl translate-x-2 translate-y-2 pointer-events-none" />
-            <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/10 bg-stone-950 relative z-10">
-              <img 
-                src="https://images.unsplash.com/photo-1615396899839-c99c121888b0?w=800&auto=format&fit=crop&q=80" 
-                alt="Gorgeous traditional Indian Bridal Makeup close-up portrait"
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-          </div>
-
-          {/* Content side */}
-          <div className="lg:col-span-6 space-y-8">
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-extrabold font-sans block">
-                👑 ROYAL BRIDAL BOUTIQUE
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-[1.15] tracking-tight">
-                Your Special Day <br />Deserves a Special Glow.
-              </h2>
-              <div className="w-16 h-0.5 bg-[#D4AF37] opacity-40 rounded-full" />
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed font-sans">
-                Every wedding is a timeless journey. We curate signature traditional transformations that blend beautifully with your ceremonial attire, lehenga, or saree. Feel absolutely radiant, authentic, and comfortable throughout your royal celebrations.
-              </p>
-            </div>
-
-            {/* Bridal services bullet points with visual icons */}
-            <div className="bg-[#4A121A] p-6 rounded-2xl border border-[#D4AF37]/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
-                <span className="text-[#D4AF37] text-lg">💄</span>
-                <span className="font-semibold">Bridal HD/Airbrush Makeup</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
-                <span className="text-[#D4AF37] text-lg">💇‍♀️</span>
-                <span className="font-semibold">Bridal Floral Hairstyling</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
-                <span className="text-[#D4AF37] text-lg">👗</span>
-                <span className="font-semibold">Perfect Saree Draping</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs sm:text-sm text-[#FFFDF9]/90 font-sans">
-                <span className="text-[#D4AF37] text-lg">💅</span>
-                <span className="font-semibold">Glitz Bridal Nail Styling</span>
-              </div>
-            </div>
-
-            <Button
-              variant="accent"
-              size="lg"
-              onClick={() => navigate('packages')}
-              className="w-full sm:w-auto bg-[#D4AF37] hover:bg-[#E5C494] text-[#3B0F19] border-none font-bold flex items-center justify-center gap-2"
-            >
-              Explore Bridal Services
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 1E. REAL PARLOUR PRICE MENU SECTION */}
+      {/* 1G. REAL PARLOUR RATE MENU SECTION */}
       <section id="salon-menu-list" className="max-w-4xl mx-auto px-6">
         <div className="bg-[#FAF6F0] border border-[#E5C494]/40 p-8 md:p-12 rounded-[32px] shadow-sm relative overflow-hidden">
           {/* Elegant gold corner accents */}
@@ -334,32 +401,18 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
             </h2>
             <div className="w-12 h-px bg-[#D4AF37]/50 mx-auto" />
             <p className="text-[11px] uppercase tracking-widest text-[#3B0F19]/50 font-sans font-semibold">
-              Pure Ladies Care &bull; Only Top Brands Used
+              Pure Ladies Care &bull; Only Top Brands Used (MAC, L'Oréal, O3+)
             </p>
           </div>
 
           {/* Dotted Menu list */}
-          <div className="space-y-6 md:space-y-8">
+          <div className="space-y-6 md:space-y-7">
             
             {/* ITEM 1 */}
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
               <div className="flex-1 flex items-baseline gap-2">
                 <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  PARTY MAKEUP
-                </span>
-                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
-              </div>
-              <div className="text-right sm:text-left shrink-0">
-                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
-                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹1,999</span>
-              </div>
-            </div>
-
-            {/* ITEM 2 */}
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-              <div className="flex-1 flex items-baseline gap-2">
-                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  BRIDAL MAKEUP (HD)
+                  BRIDAL MAKEUP (HD / AIRBRUSH)
                 </span>
                 <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
@@ -369,17 +422,31 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
               </div>
             </div>
 
-            {/* ITEM 3 */}
+            {/* ITEM 2 */}
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
               <div className="flex-1 flex items-baseline gap-2">
                 <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  GOLDEN SECRETS FACIAL
+                  PARTY MAKEUP & BLOWOUT
                 </span>
                 <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
               <div className="text-right sm:text-left shrink-0">
                 <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
-                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹1,500</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹1,999</span>
+              </div>
+            </div>
+
+            {/* ITEM 3 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  ENGAGEMENT / SANGEET MAKEOVER
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹3,999</span>
               </div>
             </div>
 
@@ -387,7 +454,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
               <div className="flex-1 flex items-baseline gap-2">
                 <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  HERBAL BRIGHTENING CLEANUP
+                  24K GOLD DUST FACIAL THERAPY
                 </span>
                 <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
@@ -401,7 +468,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
               <div className="flex-1 flex items-baseline gap-2">
                 <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  L\'OREAL DEEP HYDRATION HAIR SPA
+                  L'OREAL DEEP HYDRATION HAIR SPA
                 </span>
                 <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
@@ -415,13 +482,55 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
               <div className="flex-1 flex items-baseline gap-2">
                 <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
-                  GEL EXTENSIONS & NAIL ART
+                  EYEBROW SHAPING & THREADING
                 </span>
                 <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
               </div>
               <div className="text-right sm:text-left shrink-0">
                 <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
-                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹999</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹50</span>
+              </div>
+            </div>
+
+            {/* ITEM 7 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  NOURISHING MANICURE & HAND SPA
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹399</span>
+              </div>
+            </div>
+
+            {/* ITEM 8 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  HAIR SMOOTHENING / KERATIN INFUSION
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹2,499</span>
+              </div>
+            </div>
+
+            {/* ITEM 9 */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+              <div className="flex-1 flex items-baseline gap-2">
+                <span className="font-serif text-sm md:text-base font-bold text-[#3B0F19] tracking-wide whitespace-nowrap">
+                  BANARASI & SILK SAREE DRAPING
+                </span>
+                <span className="flex-grow border-b border-dashed border-[#3B0F19]/20 self-stretch min-w-[20px]" />
+              </div>
+              <div className="text-right sm:text-left shrink-0">
+                <span className="text-xs text-[#3B0F19]/60 font-sans mr-2">Starting from</span>
+                <span className="font-serif text-sm md:text-base font-extrabold text-[#B85C72]">₹599</span>
               </div>
             </div>
           </div>
@@ -443,7 +552,77 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         </div>
       </section>
 
-      {/* 1F. INSTAGRAM INTEGRATION */}
+      {/* 1H. MEET YOUR MAKEUP ARTIST & TEAM */}
+      <section id="meet-artist" className="max-w-6xl mx-auto px-6">
+        <div className="bg-white border border-[#F5DDE1] rounded-3xl p-8 sm:p-12 shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+          
+          {/* Artist Photo */}
+          <div className="md:col-span-5 relative">
+            <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border-2 border-[#F5DDE1] relative bg-rose-50">
+              <img
+                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&auto=format&fit=crop&q=80"
+                alt="Rajeshwari Devi - Lead Makeup Artist & Founder"
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 text-white">
+                <span className="text-[10px] text-[#D4AF37] font-bold uppercase tracking-widest block font-sans">
+                  Founder & Lead MUA
+                </span>
+                <h3 className="font-serif text-lg font-bold">Rajeshwari Devi</h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Artist Story & Philosophy */}
+          <div className="md:col-span-7 space-y-5">
+            <div className="space-y-1">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans block">
+                MEET YOUR MAKEUP ARTIST
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#3B0F19]">
+                “Beauty is about feeling confident in your own skin.”
+              </h2>
+            </div>
+
+            <p className="text-xs sm:text-sm text-[#3B0F19]/80 font-sans leading-relaxed">
+              Trained and certified by MAC and VLCC Academy with over 7 years of bridal artistry, Rajeshwari Devi brings a delicate, personalized touch to every client. Whether preparing for your royal wedding day, an anniversary party, or regular self-care, our studio promises an unhurried, hygienic, and warm experience.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="p-3 bg-[#FFF0F2] rounded-xl border border-[#F5DDE1]">
+                <span className="text-xs font-bold text-[#3B0F19] block">100% Original Products</span>
+                <span className="text-[10px] text-[#3B0F19]/60 font-sans block">MAC, Huda Beauty, Kryolan, L'Oréal</span>
+              </div>
+              <div className="p-3 bg-[#FFF0F2] rounded-xl border border-[#F5DDE1]">
+                <span className="text-xs font-bold text-[#3B0F19] block">Hygiene Guaranteed</span>
+                <span className="text-[10px] text-[#3B0F19]/60 font-sans block">Sterilized brushes, disposable applicators</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 pt-2">
+              <button
+                onClick={() => navigate('booking')}
+                className="px-5 py-2.5 bg-[#B85C72] hover:bg-[#802339] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+              >
+                Book with Rajeshwari
+              </button>
+              <a
+                href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}?text=Hi%20Rajeshwari!%20I\'d%20like%20to%20consult%20with%20you%20for%20my%20upcoming%20bridal/event%20look.`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-5 py-2.5 bg-[#059669] hover:bg-[#047857] text-white rounded-xl text-xs font-bold tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>💬</span>
+                WhatsApp Artist
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 1I. INSTAGRAM INTEGRATION */}
       <section id="instagram-feed" className="max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center max-w-xl mx-auto space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFF0F2] rounded-full text-[10px] font-sans font-extrabold tracking-widest text-[#B85C72]">
@@ -492,7 +671,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
           <a 
             href={settings.instagramUrl} 
             target="_blank" 
-            rel="noopener noreferrer"
+            rel="noopener noreferrer" 
             className="inline-flex items-center gap-2 px-6 py-3 bg-[#3B0F19] hover:bg-[#802339] text-[#FFFDF9] rounded-full text-xs font-bold tracking-wider transition-colors shadow-md"
           >
             <Instagram className="w-4 h-4" />
@@ -501,7 +680,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         </div>
       </section>
 
-      {/* 1G. TESTIMONIALS (WARM & LOCAL BEAUTY PORTFOLIO STORIES) */}
+      {/* 1J. TESTIMONIALS (WARM & LOCAL BEAUTY PORTFOLIO STORIES) */}
       <section id="home-testimonials" className="max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center max-w-xl mx-auto space-y-3">
           <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-extrabold font-sans block">
@@ -516,7 +695,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              text: "“Loved my bridal look! The entire team was so friendly, professional, and took incredible care of my traditional saree pleating and hair accessories.”",
+              text: "“Loved my bridal look! The entire team was so friendly, professional, and took incredible care of my traditional saree pleating, mukut placement and Chandan art.”",
               author: "Priyanka Sharma",
               event: "Bridal Makeup Client",
               rating: 5
@@ -570,7 +749,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         </div>
       </section>
 
-      {/* 1H. GLOW-UP CTA AT THE BOTTOM */}
+      {/* 1K. GLOW-UP CTA AT THE BOTTOM */}
       <section id="ready-glow" className="max-w-5xl mx-auto px-6 pt-12">
         <div className="bg-[#FFF0F2] border border-[#F5DDE1] rounded-[40px] p-8 md:p-14 text-center space-y-6 relative overflow-hidden shadow-sm">
           {/* Subtle design leaf outline or golden glow bubble */}
@@ -584,7 +763,7 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
               Ready for Your Glow-Up?
             </h2>
             <p className="text-sm text-[#3B0F19]/70 leading-relaxed font-sans font-medium">
-              “Book your beauty appointment today.”
+              “Book your beauty appointment today with our certified artists.”
             </p>
           </div>
 
@@ -610,8 +789,24 @@ export const HomeView: React.FC<CustomerViewsProps> = ({ navigate, settings }) =
         </div>
       </section>
 
+      {/* FLOATING WHATSAPP BUTTON (DESKTOP & MOBILE) */}
+      <a
+        href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}?text=Hi%20Glow%20and%20Grace!%20I\'d%20like%20to%20inquire%20about%20your%20beauty%20services%20and%20booking.`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-20 sm:bottom-8 right-6 z-40 bg-[#059669] hover:bg-[#047857] text-white p-3.5 sm:p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 flex items-center gap-2.5 group cursor-pointer border-2 border-white/80"
+        title="Chat with Glow & Grace on WhatsApp"
+      >
+        <span className="text-xl">💬</span>
+        <span className="hidden sm:inline-block font-sans text-xs font-bold tracking-wide pr-1">
+          WhatsApp Us
+        </span>
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#D4AF37] rounded-full animate-ping pointer-events-none" />
+        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-[#D4AF37] rounded-full border border-white" />
+      </a>
+
       {/* MOBILE APP VIEW STICKY BOOK APPOINTMENT FOR BOTTOM DEVICE COMFORT */}
-      <div className="sm:hidden fixed bottom-4 left-4 right-4 z-50">
+      <div className="sm:hidden fixed bottom-4 left-4 right-4 z-30">
         <Button 
           variant="primary" 
           size="lg" 
@@ -1050,20 +1245,44 @@ export const PackagesView: React.FC<CustomerViewsProps> = ({ navigate }) => {
 // ==========================================
 // 6. GALLERY PORTFOLIO VIEW
 // ==========================================
-export const GalleryView: React.FC<CustomerViewsProps> = () => {
+export const GalleryView: React.FC<CustomerViewsProps> = ({ navigate, settings }) => {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [activeReel, setActiveReel] = useState<GalleryItem | null>(null);
+  const [likesMap, setLikesMap] = useState<Record<string, { count: number; liked: boolean }>>({});
 
   useEffect(() => {
-    setGallery(MockDB.getGallery());
+    const items = MockDB.getGallery();
+    setGallery(items);
+
+    const initialLikes: Record<string, { count: number; liked: boolean }> = {};
+    items.forEach(item => {
+      initialLikes[item.id] = { count: item.likes || Math.floor(Math.random() * 200 + 150), liked: false };
+    });
+    setLikesMap(initialLikes);
   }, []);
 
-  const categories = ['All', 'Makeup', 'Hair', 'Skin & Facial', 'Grooming', 'Bridal Services'];
+  const handleToggleLike = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    setLikesMap(prev => {
+      const current = prev[itemId] || { count: 100, liked: false };
+      return {
+        ...prev,
+        [itemId]: {
+          count: current.liked ? current.count - 1 : current.count + 1,
+          liked: !current.liked
+        }
+      };
+    });
+  };
+
+  const categories = ['All', 'Bridal', 'Makeup', 'Hair', 'Skin & Facial', 'Nails', 'Grooming', 'Reels'];
 
   const filteredGallery = gallery.filter(item => {
     if (activeCategory === 'All') return true;
-    return item.category.toLowerCase() === activeCategory.toLowerCase();
+    if (activeCategory === 'Reels') return item.mediaType === 'video';
+    return item.category.toLowerCase().includes(activeCategory.toLowerCase());
   });
 
   return (
@@ -1074,18 +1293,28 @@ export const GalleryView: React.FC<CustomerViewsProps> = () => {
         currentIndex={lightboxIndex}
         onClose={() => setLightboxIndex(null)}
         onNavigate={(idx) => setLightboxIndex(idx)}
+        onBook={(lookName) => navigate('booking')}
+      />
+
+      {/* Reel Modal component */}
+      <ReelModal
+        reel={activeReel}
+        isOpen={activeReel !== null}
+        onClose={() => setActiveReel(null)}
+        onBook={(lookName) => navigate('booking')}
       />
 
       {/* Header */}
-      <div className="text-center max-w-xl mx-auto">
-        <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-semibold font-sans block mb-3">
-          Real Salon Portfolios
-        </span>
-        <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#24191B] mb-4">
-          Bridal & Glamour Gallery
+      <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#FFF0F2] rounded-full text-[10px] font-sans font-extrabold tracking-[0.2em] text-[#B85C72] uppercase border border-[#F5DDE1]">
+          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+          AUTHENTIC BEAUTY WORK
+        </div>
+        <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#3B0F19]">
+          Bridal & Glamour Portfolio
         </h2>
-        <p className="text-sm text-[#24191B]/60 leading-relaxed font-sans">
-          Behold our genuine customer glow transformations. We do not use mock stock imagery.
+        <p className="text-sm text-[#3B0F19]/70 leading-relaxed font-sans">
+          Behold our genuine customer transformations, festive saree drapings, and salon hair therapies. Every look is crafted with love and genuine international cosmetics.
         </p>
       </div>
 
@@ -1098,10 +1327,10 @@ export const GalleryView: React.FC<CustomerViewsProps> = () => {
               setActiveCategory(cat);
               setLightboxIndex(null);
             }}
-            className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 cursor-pointer ${
+            className={`px-5 py-2 rounded-full text-xs font-bold tracking-wider transition-all duration-300 cursor-pointer ${
               activeCategory === cat
-                ? 'bg-[#B85C72] text-white shadow-sm'
-                : 'text-[#24191B]/70 bg-[#FFF9F7] border border-[#F5DDE1] hover:text-[#B85C72]'
+                ? 'bg-[#3B0F19] text-white shadow-md'
+                : 'text-[#3B0F19]/70 bg-[#FFF9F7] border border-[#F5DDE1] hover:text-[#B85C72]'
             }`}
           >
             {cat}
@@ -1109,40 +1338,108 @@ export const GalleryView: React.FC<CustomerViewsProps> = () => {
         ))}
       </div>
 
-      {/* Masonry image layout */}
+      {/* Masonry / Grid layout */}
       {filteredGallery.length > 0 ? (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 animate-fade-in">
-          {filteredGallery.map((item, index) => (
-            <div
-              key={item.id}
-              onClick={() => setLightboxIndex(index)}
-              className="break-inside-avoid bg-white border border-[#F5DDE1] rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-500 cursor-pointer group relative"
-            >
-              <img
-                src={item.imageUrl}
-                alt={item.alt}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="w-full h-auto object-cover transition-transform duration-750 ease-out group-hover:scale-102"
-              />
-              <div className="absolute inset-0 bg-[#24191B]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                <span className="text-[10px] text-[#D4A373] uppercase font-bold tracking-widest block font-sans">
-                  {item.category}
-                </span>
-                <h4 className="font-serif text-white text-base font-bold">{item.title}</h4>
-                <p className="text-white/70 text-xs mt-1 line-clamp-2">{item.description}</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
+          {filteredGallery.map((item, index) => {
+            const isVideo = item.mediaType === 'video';
+            const likeInfo = likesMap[item.id] || { count: item.likes || 150, liked: false };
+
+            return (
+              <div
+                key={item.id}
+                onClick={() => {
+                  if (isVideo) {
+                    setActiveReel(item);
+                  } else {
+                    setLightboxIndex(index);
+                  }
+                }}
+                className="group relative rounded-2xl overflow-hidden bg-stone-100 border border-[#F5DDE1] shadow-xs hover:shadow-xl transition-all duration-500 cursor-pointer flex flex-col justify-end aspect-square"
+              >
+                <img
+                  src={item.imageUrl}
+                  alt={item.alt || item.title}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                />
+
+                {/* Dark Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
+
+                {/* Top Badges */}
+                <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+                  <span className="bg-black/50 backdrop-blur-md text-white text-[9px] font-sans font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border border-white/20">
+                    {item.category}
+                  </span>
+
+                  {isVideo ? (
+                    <span className="bg-[#B85C72] text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-xs">
+                      ▶ Reel
+                    </span>
+                  ) : (
+                    <button
+                      onClick={(e) => handleToggleLike(e, item.id)}
+                      className={`p-1.5 rounded-full backdrop-blur-md transition-transform active:scale-125 ${
+                        likeInfo.liked ? 'bg-rose-600 text-white' : 'bg-black/40 text-white hover:bg-black/60'
+                      }`}
+                      title="Like this look"
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${likeInfo.liked ? 'fill-white' : ''}`} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Bottom details */}
+                <div className="relative z-10 p-3.5 space-y-1 text-white">
+                  <h4 className="font-serif font-bold text-xs sm:text-sm leading-tight line-clamp-1 group-hover:text-[#E5C494] transition-colors">
+                    {item.title}
+                  </h4>
+                  <div className="flex items-center justify-between text-[10px] text-white/80 font-sans">
+                    <span className="line-clamp-1">{item.description}</span>
+                    <span className="shrink-0 ml-2 font-semibold text-rose-300">
+                      ❤️ {likeInfo.count}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <EmptyState
           title="No shots uploaded yet"
-          message="We are currently organizing photo sessions for this segment. Browse bridal section in the meantime."
+          message="We are currently organizing photo sessions for this segment. Browse our other categories in the meantime."
           actionText="View All Shots"
           onAction={() => setActiveCategory('All')}
         />
       )}
+
+      {/* Bottom Instagram CTA Banner */}
+      <div className="bg-[#FFF0F2] border border-[#F5DDE1] rounded-3xl p-8 text-center space-y-4 max-w-2xl mx-auto">
+        <h3 className="font-serif text-xl font-bold text-[#3B0F19]">Love what you see?</h3>
+        <p className="text-xs text-[#3B0F19]/70 font-sans max-w-md mx-auto">
+          We post daily transformation reels, client stories, and behind-the-scenes artistry on our Instagram profile.
+        </p>
+        <div className="flex justify-center gap-3 pt-1">
+          <a
+            href={settings.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 bg-[#3B0F19] hover:bg-[#802339] text-[#FFFDF9] rounded-full text-xs font-bold tracking-wider transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Instagram className="w-3.5 h-3.5" />
+            Follow @glowandgrace
+          </a>
+          <button
+            onClick={() => navigate('booking')}
+            className="px-5 py-2.5 bg-[#B85C72] hover:bg-[#802339] text-white rounded-full text-xs font-bold tracking-wider transition-colors shadow-sm"
+          >
+            Book Your Look
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

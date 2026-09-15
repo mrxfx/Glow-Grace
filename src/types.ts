@@ -47,6 +47,12 @@ export interface GalleryItem {
   description: string;
   isFeatured: boolean;
   createdAt: string;
+  mediaType?: 'image' | 'video';
+  videoUrl?: string;
+  aspectRatio?: 'square' | 'portrait' | 'landscape' | 'reel';
+  likes?: number;
+  viewCount?: string;
+  duration?: string;
 }
 
 export interface Review {
