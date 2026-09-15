@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Calendar, Users, Scissors, Gift, Image, 
   Star, Settings, LogOut, Search, Filter, Check, X, 
   Trash2, Plus, Edit, ShieldAlert, Sparkles, Phone, MessageCircle, AlertCircle, Bell,
-  Cpu, Terminal, Copy, Clock, Mail, MessageSquare, RefreshCw, Cloud, CheckCircle, Database
+  Cpu, Terminal, Copy, Clock, Mail, MessageSquare, RefreshCw, Cloud, CheckCircle, Database, Globe
 } from 'lucide-react';
 import { MockDB } from '../data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, Appointment, WebsiteSettings, Notification } from '../types';
@@ -232,6 +232,9 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
             <span className="text-[10px] uppercase font-bold tracking-widest text-[#B85C72] block">Glow & Grace Secure Desk</span>
             <h2 className="font-serif text-3xl font-extrabold text-[#24191B]">Admin Login</h2>
             <p className="text-xs text-stone-500">Enter credentials or use Google auth for real-time cloud sync.</p>
+            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-[11px] rounded-xl text-left leading-relaxed">
+              <span className="font-bold">Tip:</span> If Google Sign-In prompts <code className="font-mono bg-white px-1 py-0.5 rounded border border-amber-200">auth/unauthorized-domain</code>, please use the instant Admin Passcode login below (<code className="font-mono bg-white px-1 py-0.5 rounded border border-amber-200">admin</code> / <code className="font-mono bg-white px-1 py-0.5 rounded border border-amber-200">grace2026</code>) or whitelist your preview domain in Firebase Console &gt; Authentication &gt; Settings &gt; Authorized Domains.
+            </div>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-5">
@@ -579,6 +582,7 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
               { id: 'reviews', label: 'Reviews', icon: <Star className="w-4 h-4" />, count: reviews.filter(r => r.status === 'Pending').length },
               { id: 'offers', label: 'Offers & Promos', icon: <Gift className="w-4 h-4" /> },
               { id: 'automations', label: 'Automations & Reminders', icon: <Cpu className="w-4 h-4" /> },
+              { id: 'seo', label: 'SEO Settings', icon: <Globe className="w-4 h-4" /> },
               { id: 'settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" /> },
             ].map(tab => (
               <button
@@ -1553,6 +1557,76 @@ exports.sendAutomatedReminders = onSchedule({
                 </div>
               </Modal>
             )}
+          </div>
+        )}
+
+        {/* TAB 10: SEO SETTINGS */}
+        {activeTab === 'seo' && (
+          <div className="bg-white border border-stone-200 p-6 md:p-8 rounded-3xl space-y-6 animate-fade-in max-w-2xl shadow-sm">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#B85C72]">Search Engine Optimization</span>
+              <h3 className="font-serif text-xl font-bold text-stone-800">SEO Meta & Social Sharing Settings</h3>
+              <p className="text-xs text-stone-500">Configure search engine meta titles, descriptions, keywords, and OpenGraph (OG) preview images saved directly in Firebase.</p>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Meta Title (Browser & Search Snippet) *</label>
+                <input
+                  type="text"
+                  value={settings.metaTitle || 'Glow & Grace | Luxury Ladies Parlour & Bridal Studio'}
+                  onChange={e => onSettingsUpdate({ ...settings, metaTitle: e.target.value })}
+                  placeholder="Glow & Grace | Luxury Ladies Parlour & Bridal Studio"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
+                />
+                <p className="text-[11px] text-stone-400 mt-1">Recommended: 50-60 characters.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Meta Description (SERP Snippet) *</label>
+                <textarea
+                  rows={3}
+                  value={settings.metaDescription || 'Experience expert bridal makeup, hair styling, facials, and luxury salon services at Glow & Grace.'}
+                  onChange={e => onSettingsUpdate({ ...settings, metaDescription: e.target.value })}
+                  placeholder="Experience expert bridal makeup, hair styling..."
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800 resize-none"
+                />
+                <p className="text-[11px] text-stone-400 mt-1">Recommended: 150-160 characters for optimal search snippets.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">Search Keywords *</label>
+                <input
+                  type="text"
+                  value={settings.keywords || 'bridal makeup, ladies parlour, hair spa, facial, salon near me'}
+                  onChange={e => onSettingsUpdate({ ...settings, keywords: e.target.value })}
+                  placeholder="bridal makeup, ladies parlour, hair spa, salon"
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-stone-500 mb-1 font-bold uppercase tracking-wider">OpenGraph (OG) Social Share Image URL *</label>
+                <input
+                  type="url"
+                  value={settings.ogImageUrl || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&auto=format&fit=crop&q=80'}
+                  onChange={e => onSettingsUpdate({ ...settings, ogImageUrl: e.target.value })}
+                  placeholder="https://images.unsplash.com/..."
+                  className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-3 px-4 text-sm outline-none focus:border-[#D4A373] text-stone-800"
+                />
+                <p className="text-[11px] text-stone-400 mt-1">Displayed when shared on WhatsApp, Facebook, Twitter, and LinkedIn.</p>
+              </div>
+
+              <div className="pt-4">
+                <Button 
+                  variant="accent" 
+                  onClick={() => triggerToast('SEO settings successfully saved to Firebase Firestore!')}
+                  className="w-full font-bold shadow-md"
+                >
+                  Save SEO Settings to Firebase
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 

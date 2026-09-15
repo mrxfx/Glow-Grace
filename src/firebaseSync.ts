@@ -377,8 +377,11 @@ export async function signInAdminWithGoogle(): Promise<void> {
       window.dispatchEvent(new Event('gg_db_update'));
       throw new Error(`Unauthorized access. Only ${ADMIN_EMAIL} is approved.`);
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google Sign-in failed:', error);
+    if (error?.code === 'auth/unauthorized-domain') {
+      throw new Error(`Firebase Auth Error (auth/unauthorized-domain): This preview domain is not listed under Authorized Domains in your Firebase Console for project 'glowgracev0'. Please add this domain in Firebase Console > Authentication > Settings > Authorized Domains, or sign in using the Admin Passcode (admin / grace2026).`);
+    }
     throw error;
   }
 }

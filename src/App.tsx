@@ -48,6 +48,40 @@ export default function App() {
   // 3. Global settings state linked to DB
   const [settings, setSettings] = useState<WebsiteSettings>(() => MockDB.getSettings());
 
+  // Dynamic SEO Updater
+  useEffect(() => {
+    if (settings.metaTitle) {
+      document.title = settings.metaTitle;
+    }
+    if (settings.metaDescription) {
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', settings.metaDescription);
+    }
+    if (settings.ogImageUrl) {
+      let ogImg = document.querySelector('meta[property="og:image"]');
+      if (!ogImg) {
+        ogImg = document.createElement('meta');
+        ogImg.setAttribute('property', 'og:image');
+        document.head.appendChild(ogImg);
+      }
+      ogImg.setAttribute('content', settings.ogImageUrl);
+    }
+    if (settings.keywords) {
+      let kw = document.querySelector('meta[name="keywords"]');
+      if (!kw) {
+        kw = document.createElement('meta');
+        kw.setAttribute('name', 'keywords');
+        document.head.appendChild(kw);
+      }
+      kw.setAttribute('content', settings.keywords);
+    }
+  }, [settings]);
+
   const handleSettingsUpdate = (newSet: WebsiteSettings) => {
     setSettings(newSet);
     MockDB.set('settings', newSet);

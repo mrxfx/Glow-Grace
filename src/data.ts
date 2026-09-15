@@ -881,7 +881,11 @@ export const DEFAULT_SETTINGS: WebsiteSettings = {
   openingHours: 'Monday – Sunday, 10:00 AM – 8:00 PM',
   instagramUrl: 'https://instagram.com/glowandgrace_salon',
   mapsUrl: 'https://maps.google.com/?q=Agartala+Tripura',
-  iframeMapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29202.836413481232!2d91.26514757317769!3d23.837375211993427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3753f3f01c8eb1db%3A0x6739920ef0d19f3c!2sAgartala%2C%20Tripura!5e0!3m2!1sen!2sin!4v1726145000000!5m2!1sen!2sin'
+  iframeMapsUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d29202.836413481232!2d91.26514757317769!3d23.837375211993427!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3753f3f01c8eb1db%3A0x6739920ef0d19f3c!2sAgartala%2C%20Tripura!5e0!3m2!1sen!2sin!4v1726145000000!5m2!1sen!2sin',
+  metaTitle: 'Glow & Grace | Luxury Ladies Parlour & Bridal Studio',
+  metaDescription: 'Experience expert bridal makeup, hair styling, facials, and luxury salon services at Glow & Grace.',
+  ogImageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1200&auto=format&fit=crop&q=80',
+  keywords: 'bridal makeup, ladies parlour, hair spa, facial, salon'
 };
 
 export const DEFAULT_APPOINTMENTS: Appointment[] = [
@@ -938,63 +942,26 @@ export class MockDB {
   }
 
   static init() {
-    const isAdmin = typeof window !== 'undefined' && (window.location.hash.includes('admin') || sessionStorage.getItem('gg_admin_token') === 'authorized');
-    
-    if (isAdmin) {
-      // Admin dashboard strictly shows Firebase database content. Clear local seed/demo fallback if present.
-      const services = localStorage.getItem('gg_services');
-      if (!services || services.includes('bridal-makeup') || services.includes('party-makeup')) {
-        localStorage.setItem('gg_services', '[]');
+    // Clear out demo data across both customer and admin views so everything starts empty for fresh user uploads
+    const keys = ['services', 'packages', 'artists', 'gallery', 'reviews', 'offers', 'appointments', 'notifications'];
+    keys.forEach(key => {
+      const val = localStorage.getItem(`gg_${key}`);
+      if (!val || 
+          val.includes('bridal-makeup') || 
+          val.includes('Basic Makeup') || 
+          val.includes('Riya Sharma') || 
+          val.includes('Classic Bridal Glow') || 
+          val.includes('Deepika') || 
+          val.includes('BRIDAL1000') || 
+          val.includes('Meghna Chatterjee') || 
+          val.includes('Pooja Roy')) {
+        localStorage.setItem(`gg_${key}`, '[]');
       }
-      const packages = localStorage.getItem('gg_packages');
-      if (!packages || packages.includes('Basic Makeup') || packages.includes('Party Makeup')) {
-        localStorage.setItem('gg_packages', '[]');
-      }
-      const artists = localStorage.getItem('gg_artists');
-      if (!artists || artists.includes('Riya Sharma') || artists.includes('riya-sharma')) {
-        localStorage.setItem('gg_artists', '[]');
-      }
-      const gallery = localStorage.getItem('gg_gallery');
-      if (!gallery || gallery.includes('Classic Bridal Glow') || gallery.includes('Bridal Glamour')) {
-        localStorage.setItem('gg_gallery', '[]');
-      }
-      const reviews = localStorage.getItem('gg_reviews');
-      if (!reviews || reviews.includes('Deepika') || reviews.includes('Sushmita')) {
-        localStorage.setItem('gg_reviews', '[]');
-      }
-      const offers = localStorage.getItem('gg_offers');
-      if (!offers || offers.includes('BRIDAL1000') || offers.includes('PARTY500')) {
-        localStorage.setItem('gg_offers', '[]');
-      }
-      const appointments = localStorage.getItem('gg_appointments');
-      if (!appointments || appointments.includes('Meghna Chatterjee') || appointments.includes('Pooja Roy')) {
-        localStorage.setItem('gg_appointments', '[]');
-      }
-      const notifications = localStorage.getItem('gg_notifications');
-      if (!notifications || notifications.includes('Pooja Roy')) {
-        localStorage.setItem('gg_notifications', '[]');
-      }
-      const cachedSettings = localStorage.getItem('gg_settings');
-      if (!cachedSettings || cachedSettings.includes('9876543210')) {
-        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
-      }
-    } else {
-      // Customer view fallback
-      if (!localStorage.getItem('gg_services')) localStorage.setItem('gg_services', JSON.stringify(DEFAULT_SERVICES));
-      if (!localStorage.getItem('gg_packages')) localStorage.setItem('gg_packages', JSON.stringify(DEFAULT_PACKAGES));
-      if (!localStorage.getItem('gg_artists')) localStorage.setItem('gg_artists', JSON.stringify(DEFAULT_ARTISTS));
-      if (!localStorage.getItem('gg_gallery')) localStorage.setItem('gg_gallery', JSON.stringify(DEFAULT_GALLERY));
-      if (!localStorage.getItem('gg_reviews')) localStorage.setItem('gg_reviews', JSON.stringify(DEFAULT_REVIEWS));
-      if (!localStorage.getItem('gg_offers')) localStorage.setItem('gg_offers', JSON.stringify(DEFAULT_OFFERS));
-      
-      const cachedSettings = localStorage.getItem('gg_settings');
-      if (!cachedSettings || cachedSettings.includes('9876543210')) {
-        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
-      } else {
-        localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS)); // Force overwrite to always keep up to date
-      }
-      if (!localStorage.getItem('gg_appointments')) localStorage.setItem('gg_appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
-      if (!localStorage.getItem('gg_notifications')) localStorage.setItem('gg_notifications', JSON.stringify(DEFAULT_NOTIFICATIONS));
+    });
+
+    const cachedSettings = localStorage.getItem('gg_settings');
+    if (!cachedSettings) {
+      localStorage.setItem('gg_settings', JSON.stringify(DEFAULT_SETTINGS));
     }
   }
 

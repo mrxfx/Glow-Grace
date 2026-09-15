@@ -111,6 +111,10 @@ export interface WebsiteSettings {
   instagramUrl: string;
   mapsUrl: string;
   iframeMapsUrl: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImageUrl?: string;
+  keywords?: string;
 }
 
 export interface Notification {
