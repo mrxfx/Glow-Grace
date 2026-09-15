@@ -51,9 +51,15 @@ const TRANSFORMATION_ITEMS: BeforeAfterPair[] = [
 
 interface BeforeAfterSliderProps {
   onBook?: (serviceName: string) => void;
+  compact?: boolean;
+  onViewAll?: () => void;
 }
 
-export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ onBook }) => {
+export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ 
+  onBook, 
+  compact = false, 
+  onViewAll 
+}) => {
   const [activeTab, setActiveTab] = useState<string>(TRANSFORMATION_ITEMS[0].id);
   const [sliderPosition, setSliderPosition] = useState<number>(50); // 0 to 100%
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -90,40 +96,42 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ onBook }) 
   };
 
   return (
-    <section id="the-glow-up" className="max-w-6xl mx-auto px-6 space-y-10">
+    <section id="the-glow-up" className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
       {/* Section Heading */}
-      <div className="text-center max-w-xl mx-auto space-y-3">
-        <span className="text-xs uppercase tracking-[0.25em] text-[#B85C72] font-extrabold font-sans block">
-          REAL CLIENT TRANSFORMATIONS
-        </span>
-        <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-[#3B0F19]">
+      <div className="text-center max-w-xl mx-auto space-y-2">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFF0F2] rounded-full text-[10px] font-sans font-extrabold tracking-widest text-[#B85C72] uppercase border border-[#F5DDE1]">
+          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+          REAL CLIENT TRANSFORMATION
+        </div>
+        <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-[#3B0F19]">
           The Glow-Up ✨
         </h2>
-        <div className="w-16 h-0.5 bg-[#B85C72] mx-auto opacity-40 rounded-full" />
-        <p className="text-sm text-[#3B0F19]/70 font-sans">
-          Witness the magic of professional artistry and personalized care. Drag the slider to reveal the transformation!
+        <p className="text-xs sm:text-sm text-[#3B0F19]/70 font-sans">
+          Slide horizontally to reveal the before & after transformation magic.
         </p>
       </div>
 
-      {/* Tabs for different transformation types */}
-      <div className="flex flex-wrap justify-center gap-2">
-        {TRANSFORMATION_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => {
-              setActiveTab(item.id);
-              setSliderPosition(50);
-            }}
-            className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wider font-sans transition-all duration-300 cursor-pointer ${
-              activeTab === item.id
-                ? 'bg-[#3B0F19] text-white shadow-md'
-                : 'bg-[#FFF0F2] text-[#3B0F19]/70 border border-[#F5DDE1] hover:text-[#B85C72]'
-            }`}
-          >
-            {item.title}
-          </button>
-        ))}
-      </div>
+      {/* Tabs for different transformation types (hidden in compact mode to minimize scrolling) */}
+      {!compact && (
+        <div className="flex flex-wrap justify-center gap-2">
+          {TRANSFORMATION_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setSliderPosition(50);
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-bold font-sans transition-all duration-300 cursor-pointer ${
+                activeTab === item.id
+                  ? 'bg-[#3B0F19] text-[#FFFDF9] shadow-sm'
+                  : 'bg-[#FFF0F2] text-[#3B0F19]/80 border border-[#F5DDE1] hover:border-[#B85C72]'
+              }`}
+            >
+              {item.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Interactive Slider Frame */}
       <div className="bg-white border border-[#F5DDE1] p-4 sm:p-8 rounded-[32px] shadow-lg space-y-6">
@@ -237,6 +245,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ onBook }) 
         <p className="text-xs text-[#3B0F19]/70 font-sans leading-relaxed text-center sm:text-left">
           {activeItem.description}
         </p>
+      </div>
+
+      {/* Button: See More Transformations */}
+      <div className="text-center pt-2">
+        <button
+          onClick={() => onViewAll && onViewAll()}
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-white hover:bg-[#FFF0F2] text-[#B85C72] border border-[#F5DDE1] rounded-full text-xs font-bold font-sans tracking-wide transition-all shadow-xs hover:shadow-md cursor-pointer"
+        >
+          <span>See More Transformations</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
     </section>
   );

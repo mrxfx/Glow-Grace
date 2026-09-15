@@ -56,7 +56,7 @@ export const WhatsAppButton: React.FC<{ number: string; message?: string }> = ({
       target="_blank"
       rel="noopener noreferrer"
       id="floating-whatsapp"
-      className="fixed bottom-6 right-6 z-50 flex items-center justify-center bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-105 transition-transform duration-300"
+      className="hidden sm:flex fixed bottom-6 right-6 z-50 items-center justify-center bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:scale-105 transition-transform duration-300"
       aria-label="Chat on WhatsApp"
     >
       <MessageCircle className="w-6 h-6 fill-current" />

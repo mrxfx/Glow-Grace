@@ -1,11 +1,14 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useHashRoute } from './router';
 import { MockDB } from './data';
-import { WebsiteSettings } from './types';
+import { WebsiteSettings, GalleryItem } from './types';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { WhatsAppButton } from './components/Common';
 import { ContactSection } from './components/ContactSection';
+import { StickyMobileActionBar } from './components/StickyMobileActionBar';
+import { BridalShowcase } from './components/BridalShowcase';
+import { BeautyReelsViewer } from './components/BeautyReelsViewer';
 
 // Lazy-load the heavy administrative dashboard module to keep initial bundle ultra-light
 const AdminViews = lazy(() => import('./views/AdminViews').then(m => ({ default: m.AdminViews })));
@@ -70,6 +73,36 @@ export default function App() {
         return <ServiceDetailsView {...props} />;
       case 'packages':
         return <PackagesView {...props} />;
+      case 'bridal':
+        return (
+          <div className="py-8 space-y-12">
+            <BridalShowcase 
+              onBook={() => navigate('booking')} 
+              onViewAll={() => navigate('gallery')} 
+            />
+          </div>
+        );
+      case 'reels': {
+        const videoReels = MockDB.getGallery().filter((item: GalleryItem) => item.mediaType === 'video');
+        return (
+          <div className="py-6 px-4 max-w-4xl mx-auto">
+            <div className="text-center mb-6">
+              <span className="text-xs uppercase tracking-[0.2em] text-[#B85C72] font-bold block">
+                Social Transformation Feed
+              </span>
+              <h1 className="font-serif text-3xl font-extrabold text-[#3B0F19]">
+                Beauty Reels ✨
+              </h1>
+            </div>
+            <BeautyReelsViewer
+              reels={videoReels}
+              isOpen={true}
+              isInline={true}
+              onBook={() => navigate('booking')}
+            />
+          </div>
+        );
+      }
       case 'gallery':
         return <GalleryView {...props} />;
       case 'artists':
@@ -115,7 +148,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FFF9F7] text-[#24191B] flex flex-col justify-between">
+    <div className="min-h-screen bg-[#FFF9F7] text-[#24191B] flex flex-col justify-between pb-16 md:pb-0">
       {/* Sticky Premium Navbar */}
       <Navbar currentPath={path} navigate={navigate} />
 
@@ -132,8 +165,11 @@ export default function App() {
       {/* Luxury Footer component */}
       <Footer settings={settings} navigate={navigate} />
 
-      {/* Floating high-contrast WhatsApp CTA */}
+      {/* Floating high-contrast WhatsApp CTA (desktop only) */}
       <WhatsAppButton number={settings.whatsappNumber} />
+
+      {/* Mobile Sticky Action Bar with Home, Services, Book, WhatsApp */}
+      <StickyMobileActionBar currentPath={path} navigate={navigate} settings={settings} />
     </div>
   );
 }

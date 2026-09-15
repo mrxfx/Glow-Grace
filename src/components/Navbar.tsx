@@ -187,27 +187,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
           </div>
         </div>
       </div>
-
-      {/* Mobile Sticky Bottom CTA */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-[#FFFFFF]/90 backdrop-blur-md border-t border-[#F5DDE1] py-3 px-6 z-40 flex items-center justify-between gap-4 shadow-xl">
-        <div className="text-left">
-          <span className="text-[9px] uppercase tracking-widest text-[#B85C72] block font-sans">
-            Glow & Grace
-          </span>
-          <span className="text-xs font-serif text-[#24191B] font-bold block">
-            Beauty Begins With You
-          </span>
-        </div>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => navigate('booking')}
-          className="px-6 py-2.5 flex items-center gap-2 shrink-0"
-        >
-          <Calendar className="w-4 h-4" />
-          Book Now
-        </Button>
-      </div>
     </>
   );
 };
