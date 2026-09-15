@@ -33,7 +33,11 @@ service cloud.firestore {
           && data.startingPrice is number && data.startingPrice >= 0
           && data.category is string && data.category.size() <= 100
           && data.duration is number && data.duration >= 0
-          && (data.status == 'Active' || data.status == 'Inactive');
+          && (data.status == 'Active' || data.status == 'Inactive')
+          && (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000))
+          && (!('image' in data) || (data.image is string && data.image.size() <= 1000))
+          && (!('originalPrice' in data) || (data.originalPrice is number && data.originalPrice >= 0))
+          && (!('discount' in data) || (data.discount is number && data.discount >= 0));
     }
 
     function isValidPackage(data) {

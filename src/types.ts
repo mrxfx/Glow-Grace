@@ -9,6 +9,7 @@ export interface Service {
   price?: number;
   category: string;
   imageUrl: string;
+  image?: string; // Explicit URL/path field in Firestore
   duration: number; // in minutes
   status: 'Active' | 'Inactive';
 }

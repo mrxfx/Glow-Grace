@@ -3,13 +3,20 @@ import {
   LayoutDashboard, Calendar, Users, Scissors, Gift, Image, 
   Star, Settings, LogOut, Search, Filter, Check, X, 
   Trash2, Plus, Edit, ShieldAlert, Sparkles, Phone, MessageCircle, AlertCircle, Bell,
-  Cpu, Terminal, Copy, Clock, Mail, MessageSquare
+  Cpu, Terminal, Copy, Clock, Mail, MessageSquare, RefreshCw, Cloud, CheckCircle, Database
 } from 'lucide-react';
 import { MockDB } from '../data';
 import { Service, Package, Artist, GalleryItem, Review, Offer, Appointment, WebsiteSettings, Notification } from '../types';
 import { Button, StatusBadge, EmptyState, Toast, ImageUploader } from '../components/Common';
 import { Modal } from '../components/Modal';
-import { signInAdminWithGoogle, signOutAdmin, isCurrentUserAdmin, forceSeedIndianHeritageTheme } from '../firebaseSync';
+import { 
+  signInAdminWithGoogle, 
+  signOutAdmin, 
+  isCurrentUserAdmin, 
+  forceSeedIndianHeritageTheme, 
+  ensureServiceSchemaIncludesImage, 
+  fullWebsiteSyncToFirestore 
+} from '../firebaseSync';
 import { auth } from '../firebase';
 
 interface AdminViewsProps {
@@ -43,6 +50,11 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
   // Active view inside dashboard
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
+  // Sync state variables
+  const [isSyncingWebsite, setIsSyncingWebsite] = useState(false);
+  const [isAuditingSchema, setIsAuditingSchema] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(() => localStorage.getItem('gg_last_sync_time'));
+
   // Search & Filters states
   const [appSearch, setAppSearch] = useState('');
   const [appFilterStatus, setAppFilterStatus] = useState('All');
@@ -62,7 +74,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
     category: 'Bridal Services',
     duration: 60,
     status: 'Active' as const,
-    imageUrl: ''
+    imageUrl: '',
+    image: ''
   });
   const [packageForm, setPackageForm] = useState({ name: '', price: 0, description: '', features: '', isPopular: false, status: 'Active' as const });
   const [artistForm, setArtistForm] = useState({ name: '', role: 'Senior Makeup Artist', experience: '5+ Years', specialty: '', bio: '', photoUrl: '', status: 'Active' as const, rating: 5 });
@@ -339,26 +352,65 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
     }
   };
 
+  // Full Website Sync Handlers
+  const handleFullWebsiteSync = async () => {
+    setIsSyncingWebsite(true);
+    try {
+      const report = await fullWebsiteSyncToFirestore();
+      const timeStr = report.timestamp || new Date().toLocaleTimeString('en-IN');
+      setLastSyncTime(timeStr);
+      localStorage.setItem('gg_last_sync_time', timeStr);
+      triggerToast(`Full website synced to Firestore! (${report.servicesCount} services with image URLs, ${report.packagesCount} packages, ${report.artistsCount} artists & settings)`);
+    } catch (err: any) {
+      console.error('Full website sync error:', err);
+      triggerToast(err.message || 'Website sync failed. Please check admin auth or connectivity.');
+    } finally {
+      setIsSyncingWebsite(false);
+    }
+  };
+
+  const handleAuditServiceSchema = async () => {
+    setIsAuditingSchema(true);
+    try {
+      const res = await ensureServiceSchemaIncludesImage();
+      triggerToast(`Service image schema verified! Scanned ${res.totalCount} services (${res.updatedCount} updated with 'image' field).`);
+    } catch (err: any) {
+      console.error('Service schema audit error:', err);
+      triggerToast(err.message || 'Service schema audit failed.');
+    } finally {
+      setIsAuditingSchema(false);
+    }
+  };
+
   // Create or Update entity handlers
   const handleServiceFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const list = MockDB.getServices();
+    const imageVal = serviceForm.image || serviceForm.imageUrl || '';
     if (selectedFormId) {
       const idx = list.findIndex(s => s.id === selectedFormId);
       if (idx !== -1) {
-        list[idx] = { ...list[idx], ...serviceForm, slug: serviceForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') };
+        list[idx] = { 
+          ...list[idx], 
+          ...serviceForm,
+          image: imageVal,
+          imageUrl: imageVal,
+          slug: serviceForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') 
+        };
         MockDB.set('services', list);
-        triggerToast('Service details updated.');
+        triggerToast('Service details updated & synchronized to Firestore.');
       }
     } else {
       const newS: Service = {
         id: `s-${Date.now()}`,
         slug: serviceForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        ...serviceForm
+        ...serviceForm,
+        image: imageVal,
+        imageUrl: imageVal,
       };
       list.push(newS);
       MockDB.set('services', list);
-      triggerToast('New Service added successfully.');
+      triggerToast('New Service added & synchronized to Firestore.');
     }
     setActiveFormType(null);
     setSelectedFormId(null);
@@ -579,8 +631,28 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
             </h2>
           </div>
 
-          {/* Notifications Bell indicator overlay */}
-          <div className="flex items-center gap-4">
+          {/* Header Actions & Full Website Sync */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleFullWebsiteSync}
+              disabled={isSyncingWebsite}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer border ${
+                isSyncingWebsite
+                  ? 'bg-rose-50 text-[#B85C72] border-[#F5DDE1]'
+                  : 'bg-[#B85C72] hover:bg-[#9e4a5d] text-white border-transparent'
+              }`}
+              title="Perform a full synchronization of all website services, images, packages, artists, and settings to Firestore"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingWebsite ? 'animate-spin' : ''}`} />
+              <span>{isSyncingWebsite ? 'Syncing Cloud...' : 'Full Website Sync'}</span>
+            </button>
+
+            {lastSyncTime && (
+              <span className="hidden xl:inline-block text-[11px] text-stone-500 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
+                Synced at {lastSyncTime}
+              </span>
+            )}
+
             <div className="relative">
               <button 
                 onClick={markAllNotifRead}
@@ -831,102 +903,124 @@ export const AdminViews: React.FC<AdminViewsProps> = ({ path, navigate, settings
         {/* TAB 3: SERVICES MENU CRUD */}
         {activeTab === 'services' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex justify-end">
-              <Button
-                variant="accent"
-                onClick={() => {
-                  setSelectedFormId(null);
-                  setServiceForm({
-                    name: '',
-                    description: '',
-                    startingPrice: 999,
-                    originalPrice: 0,
-                    discount: 0,
-                    category: 'Bridal Services',
-                    duration: 60,
-                    status: 'Active',
-                    imageUrl: ''
-                  });
-                  setActiveFormType('service');
-                }}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" /> Add Service
-              </Button>
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-stone-200">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-stone-800">Services Catalog ({services.length})</h3>
+                <p className="text-xs text-stone-500">Each service includes full description, pricing, category, duration, and cloud-synced 'image' field (URL).</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAuditServiceSchema}
+                  disabled={isAuditingSchema}
+                  className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer border border-stone-200"
+                  title="Audit and ensure all Firestore service documents include an image field URL"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isAuditingSchema ? 'animate-spin text-[#B85C72]' : ''}`} />
+                  {isAuditingSchema ? 'Verifying Schema...' : 'Ensure "image" Schema'}
+                </button>
+                <Button
+                  variant="accent"
+                  onClick={() => {
+                    setSelectedFormId(null);
+                    setServiceForm({
+                      name: '',
+                      description: '',
+                      startingPrice: 999,
+                      originalPrice: 0,
+                      discount: 0,
+                      category: 'Bridal Services',
+                      duration: 60,
+                      status: 'Active',
+                      imageUrl: '',
+                      image: ''
+                    });
+                    setActiveFormType('service');
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Add Service
+                </Button>
+              </div>
             </div>
 
             {/* List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map(s => (
-                <div key={s.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-sm">
-                  <div className="space-y-3">
-                    {/* Service Image preview */}
-                    {s.imageUrl ? (
-                      <div className="w-full h-32 rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
-                        <img
-                          src={s.imageUrl}
-                          alt={s.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-24 rounded-xl bg-[#FFF0F2] border border-[#F5DDE1] flex items-center justify-center text-xs text-[#B85C72] font-medium">
-                        No image uploaded
-                      </div>
-                    )}
-                    <div className="flex justify-between items-start">
-                      <span className="text-[10px] text-[#B85C72] uppercase font-bold tracking-widest">{s.category}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                        s.status === 'Active' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' : 'bg-red-50 border border-red-200 text-red-600'
-                      }`}>
-                        {s.status}
-                      </span>
-                    </div>
-                    <h4 className="font-serif text-lg font-bold text-stone-800">{s.name}</h4>
-                    <p className="text-xs text-stone-500 line-clamp-2">{s.description}</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-base font-serif font-extrabold text-[#B85C72]">₹{s.startingPrice}</span>
-                      {s.originalPrice && s.originalPrice > s.startingPrice && (
-                        <span className="text-xs text-stone-400 line-through">₹{s.originalPrice}</span>
+              {services.map(s => {
+                const displayImg = s.image || s.imageUrl;
+                return (
+                  <div key={s.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-sm">
+                    <div className="space-y-3">
+                      {/* Service Image preview */}
+                      {displayImg ? (
+                        <div className="w-full h-32 rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                          <img
+                            src={displayImg}
+                            alt={s.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-24 rounded-xl bg-[#FFF0F2] border border-[#F5DDE1] flex items-center justify-center text-xs text-[#B85C72] font-medium">
+                          No image uploaded
+                        </div>
                       )}
-                      {s.discount ? (
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                          {s.discount}% OFF
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] text-[#B85C72] uppercase font-bold tracking-widest">{s.category}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                          s.status === 'Active' ? 'bg-emerald-50 border border-emerald-200 text-emerald-600' : 'bg-red-50 border border-red-200 text-red-600'
+                        }`}>
+                          {s.status}
                         </span>
-                      ) : null}
+                      </div>
+                      <h4 className="font-serif text-lg font-bold text-stone-800">{s.name}</h4>
+                      <p className="text-xs text-stone-500 line-clamp-2">{s.description}</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-base font-serif font-extrabold text-[#B85C72]">₹{s.startingPrice}</span>
+                        {s.originalPrice && s.originalPrice > s.startingPrice && (
+                          <span className="text-xs text-stone-400 line-through">₹{s.originalPrice}</span>
+                        )}
+                        {s.discount ? (
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                            {s.discount}% OFF
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 border-t border-stone-100 pt-4 mt-4">
+                      <button
+                        onClick={() => {
+                          setSelectedFormId(s.id);
+                          const imgVal = s.image || s.imageUrl || '';
+                          setServiceForm({
+                            name: s.name,
+                            description: s.description,
+                            startingPrice: s.startingPrice,
+                            originalPrice: s.originalPrice || 0,
+                            discount: s.discount || 0,
+                            category: s.category,
+                            duration: s.duration,
+                            status: s.status,
+                            imageUrl: imgVal,
+                            image: imgVal
+                          });
+                          setActiveFormType('service');
+                        }}
+                        className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteEntity('services', s.id)}
+                        className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex gap-2 border-t border-stone-100 pt-4 mt-4">
-                    <button
-                      onClick={() => {
-                        setSelectedFormId(s.id);
-                        setServiceForm({
-                          name: s.name,
-                          description: s.description,
-                          startingPrice: s.startingPrice,
-                          originalPrice: s.originalPrice || 0,
-                          discount: s.discount || 0,
-                          category: s.category,
-                          duration: s.duration,
-                          status: s.status,
-                          imageUrl: s.imageUrl || ''
-                        });
-                        setActiveFormType('service');
-                      }}
-                      className="flex-1 py-2 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200 text-xs font-semibold cursor-pointer text-center text-stone-700 transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteEntity('services', s.id)}
-                      className="p-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1518,6 +1612,92 @@ exports.sendAutomatedReminders = onSchedule({
               </div>
             </div>
 
+            {/* FULL WEBSITE SYNC & CLOUD PERSISTENCE PANEL */}
+            <div className="mt-8 bg-gradient-to-br from-white to-[#FFF5F6] border-2 border-[#F5DDE1] rounded-2xl p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F5DDE1]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Database className="w-5 h-5 text-[#B85C72]" />
+                    <h3 className="font-serif text-lg font-bold text-stone-800">Full Website Cloud Synchronization</h3>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Synchronize all website modules, service images, pricing catalogs, and salon settings directly with Firebase Firestore.
+                  </p>
+                </div>
+                {lastSyncTime && (
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs px-3 py-1.5 rounded-xl font-semibold">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span>Last Synced: {lastSyncTime}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Entity Schema & Synchronization Status Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="bg-white border border-stone-200 rounded-xl p-3">
+                  <span className="text-xs text-stone-400 block uppercase font-bold">Services</span>
+                  <span className="text-lg font-bold text-[#B85C72]">{services.length}</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">Schema: 'image' enforced</span>
+                </div>
+                <div className="bg-white border border-stone-200 rounded-xl p-3">
+                  <span className="text-xs text-stone-400 block uppercase font-bold">Packages</span>
+                  <span className="text-lg font-bold text-[#B85C72]">{packages.length}</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">Tiered Pricing</span>
+                </div>
+                <div className="bg-white border border-stone-200 rounded-xl p-3">
+                  <span className="text-xs text-stone-400 block uppercase font-bold">Artists</span>
+                  <span className="text-lg font-bold text-[#B85C72]">{artists.length}</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">Profiles & Roles</span>
+                </div>
+                <div className="bg-white border border-stone-200 rounded-xl p-3">
+                  <span className="text-xs text-stone-400 block uppercase font-bold">Gallery Items</span>
+                  <span className="text-lg font-bold text-[#B85C72]">{gallery.length}</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">Showcase Media</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleFullWebsiteSync}
+                  disabled={isSyncingWebsite}
+                  className="flex-1 py-3 px-4 bg-[#B85C72] hover:bg-[#9e4a5d] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncingWebsite ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingWebsite ? 'Syncing Entire Website...' : 'Sync Entire Website to Firestore'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleAuditServiceSchema}
+                  disabled={isAuditingSchema}
+                  className="py-3 px-4 bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isAuditingSchema ? 'animate-spin text-[#B85C72]' : ''}`} />
+                  <span>{isAuditingSchema ? 'Auditing Schema...' : "Audit Service 'image' Schema"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (confirm('Re-seed the Indian Heritage theme (Royal Bridal, Haldi, Sangeet, Mehendi) to Firestore?')) {
+                      try {
+                        await forceSeedIndianHeritageTheme();
+                        triggerToast('Indian Heritage Theme re-seeded successfully.');
+                      } catch (err: any) {
+                        triggerToast(err.message || 'Failed to re-seed theme.');
+                      }
+                    }
+                  }}
+                  className="py-3 px-4 bg-[#FFF0F2] hover:bg-[#FFE4E8] border border-[#F5DDE1] text-[#B85C72] rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-[#D4A373]" />
+                  <span>Seed Heritage Theme</span>
+                </button>
+              </div>
+            </div>
+
             <Button variant="accent" className="w-full mt-4" onClick={() => triggerToast('Global Settings synchronized.')}>
               Confirm Global Synchronization
             </Button>
@@ -1574,13 +1754,18 @@ exports.sendAutomatedReminders = onSchedule({
             <label className="block text-xs text-[#24191B]/60 mb-1 font-bold">Description *</label>
             <textarea required rows={3} value={serviceForm.description} onChange={e => setServiceForm(p => ({ ...p, description: e.target.value }))} className="w-full bg-[#FFF9F7] border border-[#F5DDE1] rounded-xl py-2.5 px-3 text-sm text-[#24191B]" />
           </div>
-          <ImageUploader
-            label="Service Image (URL or Upload)"
-            value={serviceForm.imageUrl}
-            onChange={val => setServiceForm(p => ({ ...p, imageUrl: val }))}
-            placeholder="e.g. https://images.unsplash.com/photo-..."
-          />
-          <Button type="submit" variant="primary" className="w-full">Save Changes</Button>
+          <div className="space-y-1">
+            <ImageUploader
+              label="Service Image (URL or Upload)"
+              value={serviceForm.image || serviceForm.imageUrl}
+              onChange={val => setServiceForm(p => ({ ...p, imageUrl: val, image: val }))}
+              placeholder="e.g. https://images.unsplash.com/photo-... or upload file"
+            />
+            <p className="text-[11px] text-stone-400">
+              Saves the image path correctly to Firestore under both <code className="text-[#B85C72] font-mono font-semibold">image</code> (URL) and <code className="text-[#B85C72] font-mono font-semibold">imageUrl</code> attributes.
+            </p>
+          </div>
+          <Button type="submit" variant="primary" className="w-full">Save & Sync to Firestore</Button>
         </form>
       </Modal>
 

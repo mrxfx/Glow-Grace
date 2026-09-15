@@ -10,8 +10,11 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "startingPrice": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "discount": { "type": "number" },
         "category": { "type": "string" },
         "imageUrl": { "type": "string" },
+        "image": { "type": "string" },
         "duration": { "type": "number" },
         "status": { "type": "string", "enum": ["Active", "Inactive"] }
       },

@@ -44,7 +44,12 @@ export async function seedFirestoreIfNeeded(): Promise<void> {
       const batch = writeBatch(db);
       const defaults = MockDB.getServices();
       defaults.forEach((s) => {
-        batch.set(doc(db, 'services', s.id), s);
+        const img = s.image || s.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+        batch.set(doc(db, 'services', s.id), {
+          ...s,
+          image: img,
+          imageUrl: img
+        });
       });
       await batch.commit();
     }
@@ -146,7 +151,15 @@ export function startPublicSyncListeners(): void {
   if (!activeListeners['services']) {
     activeListeners['services'] = onSnapshot(collection(db, 'services'), (snap) => {
       const services: Service[] = [];
-      snap.forEach((d) => services.push(d.data() as Service));
+      snap.forEach((d) => {
+        const data = d.data() as Service;
+        const img = data.image || data.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+        services.push({
+          ...data,
+          image: img,
+          imageUrl: img
+        });
+      });
       localStorage.setItem('gg_services', JSON.stringify(services));
       window.dispatchEvent(new Event('gg_db_update'));
     }, (err) => {
@@ -385,7 +398,13 @@ export async function signOutAdmin(): Promise<void> {
 // Services
 export async function dbSaveService(service: Service): Promise<void> {
   try {
-    await setDoc(doc(db, 'services', service.id), service);
+    const imgUrl = service.image || service.imageUrl || '';
+    const payload: Service = {
+      ...service,
+      image: imgUrl,
+      imageUrl: imgUrl,
+    };
+    await setDoc(doc(db, 'services', service.id), payload, { merge: true });
   } catch (e) {
     handleFirestoreError(e, OperationType.WRITE, `services/${service.id}`);
   }
@@ -537,7 +556,12 @@ export async function forceSeedIndianHeritageTheme(): Promise<void> {
     // 1. Seed Services
     const sBatch = writeBatch(db);
     DEFAULT_SERVICES.forEach((s) => {
-      sBatch.set(doc(db, 'services', s.id), s);
+      const img = s.image || s.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+      sBatch.set(doc(db, 'services', s.id), {
+        ...s,
+        image: img,
+        imageUrl: img
+      });
     });
     await sBatch.commit();
 
@@ -572,6 +596,173 @@ export async function forceSeedIndianHeritageTheme(): Promise<void> {
     console.log('Indian Heritage Theme force seeded to Firestore successfully.');
   } catch (error) {
     console.error('Failed to force seed Indian Heritage Theme to Firestore:', error);
+    throw error;
+  }
+}
+
+/**
+ * Ensures the Service object schema in Firestore includes an 'image' field (URL).
+ * Scans all documents in the 'services' collection in Firestore, identifies any documents
+ * missing the 'image' field, resolves the image URL from 'image' or 'imageUrl', and updates
+ * the Firestore document so that the schema includes 'image'.
+ */
+export async function ensureServiceSchemaIncludesImage(): Promise<{
+  updatedCount: number;
+  totalCount: number;
+  services: { id: string; name: string; image: string }[];
+}> {
+  try {
+    console.log('Auditing Firestore services schema for "image" field...');
+    const servicesRef = collection(db, 'services');
+    const snap = await getDocs(servicesRef);
+    let updatedCount = 0;
+    const servicesSummary: { id: string; name: string; image: string }[] = [];
+
+    if (snap.empty) {
+      // Seed from local MockDB ensuring image field is present on every service
+      const defaults = MockDB.getServices();
+      const batch = writeBatch(db);
+      defaults.forEach((s) => {
+        const resolved = s.image || s.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+        batch.set(doc(db, 'services', s.id), {
+          ...s,
+          image: resolved,
+          imageUrl: resolved,
+        }, { merge: true });
+        servicesSummary.push({ id: s.id, name: s.name, image: resolved });
+        updatedCount++;
+      });
+      await batch.commit();
+      console.log(`Initialized and verified 'image' field on ${updatedCount} services in Firestore.`);
+      return { updatedCount, totalCount: defaults.length, services: servicesSummary };
+    }
+
+    const batch = writeBatch(db);
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() as Service;
+      const resolved = data.image || data.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+      servicesSummary.push({ id: docSnap.id, name: data.name || docSnap.id, image: resolved });
+
+      // If 'image' is missing, empty, or differs from resolved URL, or 'imageUrl' is missing
+      if (!data.image || data.image !== resolved || !data.imageUrl) {
+        batch.set(docSnap.ref, {
+          image: resolved,
+          imageUrl: resolved,
+        }, { merge: true });
+        updatedCount++;
+      }
+    });
+
+    if (updatedCount > 0) {
+      await batch.commit();
+    }
+
+    console.log(`ensureServiceSchemaIncludesImage completed. Updated ${updatedCount} of ${snap.size} service documents in Firestore.`);
+    return { updatedCount, totalCount: snap.size, services: servicesSummary };
+  } catch (error) {
+    console.error('Failed to ensure Service schema includes image field in Firestore:', error);
+    throw error;
+  }
+}
+
+/**
+ * Full Website Synchronization Engine for Admin Panel
+ * Synchronizes all website modules (Services with 'image' field URL, Packages, Artists, Gallery, Reviews, Offers, Website Settings)
+ * directly to Firebase Firestore, ensuring full real-time cloud persistence across the entire website.
+ */
+export async function fullWebsiteSyncToFirestore(): Promise<{
+  success: boolean;
+  servicesCount: number;
+  packagesCount: number;
+  artistsCount: number;
+  galleryCount: number;
+  reviewsCount: number;
+  offersCount: number;
+  settingsSynced: boolean;
+  timestamp: string;
+}> {
+  try {
+    console.log('Initiating Full Website Sync to Firestore...');
+    
+    // 1. Sync Services with enforced 'image' (URL) and 'imageUrl'
+    const services = MockDB.getServices();
+    const sBatch = writeBatch(db);
+    services.forEach((s) => {
+      const imgUrl = s.image || s.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+      sBatch.set(doc(db, 'services', s.id), {
+        ...s,
+        image: imgUrl,
+        imageUrl: imgUrl
+      }, { merge: true });
+    });
+    await sBatch.commit();
+
+    // 2. Sync Packages
+    const packages = MockDB.getPackages();
+    const pBatch = writeBatch(db);
+    packages.forEach((p) => {
+      pBatch.set(doc(db, 'packages', p.id), p, { merge: true });
+    });
+    await pBatch.commit();
+
+    // 3. Sync Artists
+    const artists = MockDB.getArtists();
+    const aBatch = writeBatch(db);
+    artists.forEach((a) => {
+      aBatch.set(doc(db, 'artists', a.id), a, { merge: true });
+    });
+    await aBatch.commit();
+
+    // 4. Sync Gallery
+    const gallery = MockDB.getGallery();
+    const gBatch = writeBatch(db);
+    gallery.forEach((g) => {
+      gBatch.set(doc(db, 'gallery', g.id), g, { merge: true });
+    });
+    await gBatch.commit();
+
+    // 5. Sync Reviews
+    const reviews = MockDB.getReviews();
+    const rBatch = writeBatch(db);
+    reviews.forEach((r) => {
+      rBatch.set(doc(db, 'reviews', r.id), r, { merge: true });
+    });
+    await rBatch.commit();
+
+    // 6. Sync Offers
+    const offers = MockDB.getOffers();
+    const oBatch = writeBatch(db);
+    offers.forEach((o) => {
+      oBatch.set(doc(db, 'offers', o.id), o, { merge: true });
+    });
+    await oBatch.commit();
+
+    // 7. Sync Global Website Settings
+    const settings = MockDB.getSettings();
+    await setDoc(doc(db, 'settings', 'global'), settings, { merge: true });
+
+    // 8. Run schema validation on services to guarantee 'image' field on all documents
+    await ensureServiceSchemaIncludesImage();
+
+    // Dispatch update event so any active local listeners refresh
+    window.dispatchEvent(new Event('gg_db_update'));
+
+    const result = {
+      success: true,
+      servicesCount: services.length,
+      packagesCount: packages.length,
+      artistsCount: artists.length,
+      galleryCount: gallery.length,
+      reviewsCount: reviews.length,
+      offersCount: offers.length,
+      settingsSynced: true,
+      timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
+
+    console.log('Full Website Sync to Firestore completed successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Full Website Sync to Firestore failed:', error);
     throw error;
   }
 }

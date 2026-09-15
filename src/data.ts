@@ -1023,7 +1023,17 @@ export class MockDB {
   }
 
   // Generic lists
-  static getServices() { return this.get<Service[]>('services'); }
+  static getServices(): Service[] { 
+    const list = this.get<Service[]>('services');
+    return list.map(s => {
+      const img = s.image || s.imageUrl || 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+      return {
+        ...s,
+        image: img,
+        imageUrl: img
+      };
+    });
+  }
   static getPackages() { return this.get<Package[]>('packages'); }
   static getArtists() { return this.get<Artist[]>('artists'); }
   static getGallery() { return this.get<GalleryItem[]>('gallery'); }

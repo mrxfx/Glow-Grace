@@ -11,12 +11,17 @@ interface ServiceCardProps {
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onViewDetails, onBook }) => {
+  const fallbackImg = 'https://images.unsplash.com/photo-1481501940778-c8bb63e376c5?w=800&auto=format&fit=crop&q=80';
+  const imgUrl = (service.image && service.image.trim() !== '')
+    ? service.image
+    : (service.imageUrl && service.imageUrl.trim() !== '' ? service.imageUrl : fallbackImg);
+
   return (
     <div className="bg-white border border-[#F5DDE1] rounded-2xl overflow-hidden group hover:shadow-xl transition-all duration-500 flex flex-col h-full">
       {/* Service Image */}
       <div className="relative h-64 overflow-hidden bg-pink-50">
         <img
-          src={service.imageUrl}
+          src={imgUrl}
           alt={service.name}
           loading="lazy"
           referrerPolicy="no-referrer"

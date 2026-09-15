@@ -1169,7 +1169,7 @@ export const ServiceDetailsView: React.FC<CustomerViewsProps> = ({ params, navig
         {/* Left Side media */}
         <div className="md:col-span-5 aspect-[3/4] rounded-2xl overflow-hidden bg-rose-50 shadow-md">
           <img
-            src={service.imageUrl}
+            src={service.image || service.imageUrl || 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&auto=format&fit=crop&q=80'}
             alt={service.name}
             className="w-full h-full object-cover"
           />
