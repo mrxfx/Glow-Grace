@@ -1299,6 +1299,7 @@ export const GalleryView: React.FC<CustomerViewsProps> = ({ navigate, settings }
       {/* Reel Modal component */}
       <ReelModal
         reel={activeReel}
+        allReels={gallery.filter((item) => item.mediaType === 'video')}
         isOpen={activeReel !== null}
         onClose={() => setActiveReel(null)}
         onBook={(lookName) => navigate('booking')}

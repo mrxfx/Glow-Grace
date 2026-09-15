@@ -53,6 +53,11 @@ export interface GalleryItem {
   likes?: number;
   viewCount?: string;
   duration?: string;
+  soundTitle?: string;
+  beforeImageUrl?: string;
+  tags?: string[];
+  comments?: { id: string; user: string; text: string; time: string; avatar?: string }[];
+  startingPrice?: number;
 }
 
 export interface Review {
